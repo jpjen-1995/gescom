@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>SIGESCOMP V1.0 - Gestion Compétitions Handball | Eniktech</title>
+    <style>
+        *{box-sizing:border-box;font-family:'Segoe UI',Roboto,sans-serif}
+        body{background:#f0f2f5;margin:0;padding:20px}
+        .app-container{max-width:1400px;margin:0 auto}
+        .card{background:white;border-radius:20px;box-shadow:0 8px 20px rgba(0,0,0,0.05);padding:20px 25px;margin-bottom:25px}
+        .card-header{font-size:1.5rem;font-weight:bold;border-left:6px solid #e67e22;padding-left:15px;margin-bottom:20px;color:#2c3e50}
+        .form-group{margin-bottom:15px}
+        label{font-weight:600;display:block;margin-bottom:6px;color:#2c3e50}
+        input,select,textarea,button{padding:10px 14px;border-radius:12px;border:1px solid #ccc;font-size:.95rem;width:100%}
+        button{background:#e67e22;color:white;font-weight:bold;border:none;cursor:pointer}
+        button:hover{background:#d35400}
+        .btn-secondary{background:#3498db}
+        .btn-secondary:hover{background:#2980b9}
+        .btn-danger{background:#e74c3c}
+        .btn-sm{padding:5px 10px;font-size:.8rem;width:auto}
+        table{width:100%;border-collapse:collapse;margin-top:15px;overflow-x:auto;display:block}
+        th,td{border:1px solid #ddd;padding:8px;text-align:left}
+        th{background:#f8f9fa}
+        .tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;border-bottom:2px solid #ddd;padding-bottom:10px}
+        .tab-btn{background:#ecf0f1;color:#2c3e50;width:auto;padding:8px 18px;border-radius:40px;cursor:pointer}
+        .tab-btn.active{background:#e67e22;color:white}
+        .section{display:none}
+        .section.active-section{display:block}
+        .login-screen{max-width:450px;margin:80px auto}
+        footer{text-align:center;margin-top:30px;font-size:.8rem;color:#7f8c8d}
+        .inline-buttons{display:flex;gap:8px;flex-wrap:wrap}
+        .badge{background:#e67e22;color:white;border-radius:30px;padding:3px 10px;font-size:.7rem}
+        .fixed-header{position:relative}
+        .btn-logout{position:absolute;top:15px;right:20px;width:auto;background:#c0392b}
+        .logo-upload{margin-bottom:15px;display:flex;align-items:center;gap:10px}
+        .logo-preview{max-height:60px;margin-left:10px}
+        @media print{
+            body,.app-container,.card,.tabs,footer,button,.tab-btn,.form-group,.btn-sm,.btn-secondary,.no-print{display:none!important}
+            #rapportContent,#rapportContent *{display:block!important;visibility:visible!important}
+            #rapportContent{margin:0;padding:10px;background:white}
+            .rapport-paper{margin:0;padding:0}
+            table, th, td { font-size: 9pt; }
+            .header h2, .header h3, .header h4 { font-size: 11pt; margin: 2px 0; }
+            .header h1 { font-size: 13pt; }
+            .signature p { font-size: 9pt; }
+            .footer p { font-size: 8pt; }
+        }
+        .rapport-paper{font-family:'Times New Roman',serif;max-width:210mm;margin:0 auto;background:white;padding:20px;font-size:12pt}
+        .rapport-header{text-align:center;margin-bottom:20px;position:relative}
+        .rapport-header .logo{position:absolute;left:0;top:0;max-height:80px;max-width:100px}
+        .rapport-header h1{font-size:1.3rem;margin:10px 0}
+        .rapport-footer{text-align:center;font-size:10pt;margin-top:30px;border-top:1px solid #ccc;padding-top:10px;font-family:'Times New Roman',serif}
+        .signature{margin-top:40px;text-align:right;font-style:italic}
+        .sanction-config{background:#f9f9f9;padding:15px;border-radius:15px;margin-bottom:20px}
+        .sanction-item{display:flex;gap:10px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+        .programmed-matches td, .programmed-matches th { font-size: 0.8rem; }
+        .calendrier-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .calendrier-table th, .calendrier-table td { border: 1px solid #000; padding: 8px; text-align: left; }
+        .disabled-field { background-color: #e9ecef; pointer-events: none; opacity: 0.6; }
+    </style>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+</head>
+<body>
+<div class="app-container" id="appRoot">
+    <div id="loginPanel" class="login-screen card">
+        <h3 style="text-align:center;">🏐 SIGESCOMP V1.0<br><span style="font-size:0.9rem;">Système de Gestion des Compétitions de Handball</span></h3>
+        <h4 style="text-align:center;"><span style="font-size:0.9rem;"><i>(Handball Competition Management System)</i></span></h4>
+		<div class="card-header">Connexion</div>
+        <div class="form-group"><label>Nom d'utilisateur</label><input type="text" id="loginUsername" placeholder="identifiant"></div>
+        <div class="form-group"><label>Mot de passe</label><input type="password" id="loginPassword" placeholder="mot de passe"></div>
+        <button id="doLoginBtn">Se connecter</button>
+        <p style="margin-top:15px;"> Tous droits reservés</p>
+    </div>
+    <div id="mainApp" style="display:none;">
+        <div class="fixed-header"><button id="logoutBtn" class="btn-danger btn-logout">🚪 Déconnexion</button></div>
+        <div class="tabs" id="mainTabs">
+            <button data-tab="saison" class="tab-btn active">🏆 Saisons</button>
+            <button data-tab="competition" class="tab-btn">📅 Compétitions</button>
+            <button data-tab="categorie" class="tab-btn">🏷️ Catégories</button>
+            <button data-tab="equipe" class="tab-btn">👥 Équipes</button>
+            <button data-tab="formule" class="tab-btn">⚙️ Formule / Matchs</button>
+            <button data-tab="programmation" class="tab-btn">📅 Programm. rencontres</button>
+            <button data-tab="resultat" class="tab-btn">📋 Résultats & Homologation</button>
+            <button data-tab="sanctions" class="tab-btn">⚖️ Sanctions & Pénalités</button>
+            <button data-tab="classement" class="tab-btn">📊 Classement</button>
+            <button data-tab="calendrier" class="tab-btn">📅 Calendrier général</button>
+            <button data-tab="rapport" class="tab-btn">📄 Rapport PV</button>
+            <button data-tab="parametres" class="tab-btn">⚙️ Paramètres</button>
+            <button data-tab="users" class="tab-btn" id="usersTabBtn" style="display:none;">👥 Utilisateurs</button>
+        </div>
+        <!-- SAISON -->
+        <div id="saisonSection" class="section active-section"><div class="card"><div class="card-header">Gestion des saisons</div>
+            <div style="display:flex; gap:20px; flex-wrap:wrap;">
+                <div style="flex:2;"><div class="form-group"><label>Nom saison</label><input type="text" id="saisonName" placeholder="2025-2026"></div>
+                <button id="createSaisonBtn">➕ Créer saison</button></div>
+                <div style="flex:3;"><label>Saison active</label><select id="activeSaisonSelect"></select>
+                <button id="selectSaisonBtn" class="btn-secondary btn-sm">Sélectionner</button>
+                <button id="cloturerSaisonBtn" class="btn-danger btn-sm" style="margin-top:8px;">🔒 Clôturer la saison active</button>
+                <div class="inline-buttons" style="margin-top:10px;">
+                    <button id="exportDataBtn" class="btn-secondary btn-sm">💾 Exporter toutes les données (JSON)</button>
+                    <button id="importDataBtn" class="btn-secondary btn-sm">📂 Importer toutes les données (JSON)</button>
+                    <input type="file" id="importDataFile" accept=".json" style="display:none;">
+                </div>
+                </div>
+            </div>
+            <div><h4>Saisons existantes</h4><div id="saisonList"></div></div>
+        </div></div>
+        <!-- COMPETITION --><div id="competitionSection" class="section"><div class="card"><div class="card-header">Compétitions</div><div class="form-group"><label>Nom compétition</label><input id="compName"></div><div class="form-group"><label>Saison</label><select id="compSaisonSelect"></select></div><button id="createCompBtn">Créer</button><h4>Liste</h4><div id="compList"></div></div></div>
+        <!-- CATEGORIE --><div id="categorieSection" class="section"><div class="card"><div class="card-header">Catégories</div><div class="form-group"><label>Nom catégorie</label><input id="catName"></div><div class="form-group"><label>Compétition</label><select id="catCompetitionSelect"></select></div><button id="createCategorieBtn">Créer</button><h4>Liste</h4><div id="categorieList"></div></div></div>
+        <!-- EQUIPE --><div id="equipeSection" class="section"><div class="card"><div class="card-header">Équipes</div><div class="form-group"><label>Catégorie</label><select id="equipeCategorieSelect"></select></div><div class="form-group"><label>Nom équipe</label><input id="equipeName"></div><div class="inline-buttons"><button id="createEquipeBtn">➕ Ajouter</button><button id="exportEquipesBtn" class="btn-secondary">📎 Exporter (CSV)</button><button id="importEquipesBtn" class="btn-secondary">📂 Importer (CSV)</button><input type="file" id="importEquipesFile" accept=".csv" style="display:none;"></div><h4>Équipes engagées</h4><div id="equipeList"></div></div></div>
+        <!-- FORMULE --><div id="formuleSection" class="section"><div class="card"><div class="card-header">Formule et génération</div><div class="form-group"><label>Catégorie</label><select id="formuleCategorieSelect"></select></div><div class="form-group"><label>Type formule</label><select id="formuleType"><option value="integrale">Intégrale AR</option><option value="poule">Poules</option></select></div><div id="poulesConfig" style="display:none;"><button id="addPouleBtn" class="btn-secondary btn-sm">➕ Ajouter poule</button><div id="poulesContainer"></div></div><div class="form-group"><label>Aller/retour</label><select id="allerRetourOption"><option value="1">Aller simple</option><option value="2">Aller & Retour</option></select></div><button id="genererMatchsBtn" class="btn-secondary">⚡ Générer rencontres</button><hr><h4>Rencontres générées (avec numéro de match & catégorie)</h4><div id="matchsPreview"></div></div></div>
+        <!-- PROGRAMMATION --><div id="programmationSection" class="section"><div class="card"><div class="card-header">Programmation des rencontres</div><div class="form-group"><label>Catégorie</label><select id="progCategorieSelect"></select></div><div class="form-group"><label>Date</label><input type="date" id="progDate"></div><div class="form-group"><label>Lieu</label><input type="text" id="progLieu" placeholder="Stade"></div><div class="form-group"><label>Rencontre non programmée / non jouée</label><select id="progMatchSelect"></select></div><button id="programmerMatchBtn" class="btn-secondary">📅 Programmer</button><hr><h4>Rencontres programmées</h4><div id="programmedMatchesList" class="programmed-matches"></div></div></div>
+        <!-- RESULTATS --><div id="resultatSection" class="section"><div class="card"><div class="card-header">Résultats et homologation</div><div class="form-group"><label>Catégorie</label><select id="resultCategorieSelect"></select></div><div id="programmedMatchesWithScores" class="programmed-matches"></div></div></div>
+        <!-- SANCTIONS --><div id="sanctionsSection" class="section"><div class="card"><div class="card-header">Sanctions et pénalités</div><div class="sanction-config"><h4>⚙️ Configurer les types de sanctions</h4><div class="form-group"><label>Libellé</label><input type="text" id="newSanctionLibelle" placeholder="ex: Amende"></div><div class="form-group"><label>Montant (FCFA)</label><input type="number" id="newSanctionMontant"></div><button id="createSanctionBtn" class="btn-secondary">➕ Ajouter nouveau type</button><div id="sanctionsConfigList" style="margin-top: 15px;"></div></div><hr><h4>Appliquer une sanction à une équipe</h4><div class="form-group"><label>Catégorie</label><select id="sanctionCategorieSelect"></select></div><div class="form-group"><label>Équipe</label><select id="sanctionEquipeSelect"></select></div><div class="form-group"><label>Type de sanction</label><select id="sanctionTypeSelect"></select></div><div class="form-group"><label>Nombre d'occurrences</label><input type="number" id="sanctionNb" value="1"></div><button id="ajouterSanctionEquipeBtn">➕ Ajouter sanction</button><hr><h4>Détail des pénalités par équipe</h4><div id="penalitesEquipes"></div><hr><h4>Règlement des pénalités</h4><div class="form-group"><label>Catégorie</label><select id="reglementCategorieSelect"></select></div><div class="form-group"><label>Équipe</label><select id="reglementEquipeSelect"></select></div><div class="form-group"><label>Montant à régler (FCFA)</label><input type="number" id="reglementMontant"></div><button id="reglementBtn" class="btn-secondary">💰 Encaisser règlement</button></div></div>
+        <!-- CLASSEMENT --><div id="classementSection" class="section"><div class="card"><div class="card-header">Classement</div><div class="form-group"><label>Catégorie</label><select id="classementCategorieSelect"></select></div><div id="classementTable"></div></div></div>
+        <!-- CALENDRIER --><div id="calendrierSection" class="section"><div class="card"><div class="card-header">Calendrier général de la compétition</div>
+            <div class="form-group"><label>Catégorie</label><select id="calendrierCategorieSelect"></select></div>
+            <div class="inline-buttons">
+                <button id="genererCalendrierBtn" class="btn-secondary">📅 Générer le calendrier (une catégorie)</button>
+                <button id="genererCalendrierCompletBtn" class="btn-secondary">📅 Calendrier complet (toutes catégories)</button>
+            </div>
+            <div id="calendrierContent"></div>
+        </div></div>
+        <!-- RAPPORT --><div id="rapportSection" class="section"><div class="card"><div class="card-header">Rapport d'homologation (PV)</div><div class="logo-upload"><label>Logo fédération (haut gauche) :</label><input type="file" id="logoUpload" accept="image/*"><img id="logoPreview" class="logo-preview" style="display:none;"><button id="clearLogoBtn" class="btn-sm btn-secondary">Effacer logo</button></div><div class="form-group"><label>Catégorie</label><select id="rapportCategorieSelect"></select></div><div class="form-group"><label>Journée / Date des rencontres</label><input type="text" id="rapportJournee" placeholder="Ex: 1ère journée"></div><div class="form-group"><label>Observations générales</label><textarea id="rapportObservations" rows="3"></textarea></div><button id="genererRapportBtn" class="btn-secondary">📄 Générer le PV</button>
+            <div id="rapportContent"></div>
+        </div></div>
+        <!-- PARAMETRES --><div id="parametresSection" class="section"><div class="card"><div class="card-header">Personnalisation des documents</div>
+            <div class="form-group"><label>Texte personnalisé dans l'en-tête (avant les titres)</label><textarea id="headerCustomText" rows="3" placeholder="Ex: Championnat Régional 2025"></textarea></div>
+            <div class="form-group"><label>Texte personnalisé dans le pied de page (après la licence)</label><textarea id="footerCustomText" rows="3" placeholder="Ex: Contact: ligue@handball.cm"></textarea></div>
+            <button id="saveSettingsBtn" class="btn-secondary">💾 Enregistrer les paramètres</button>
+            <hr>
+            <div class="inline-buttons">
+                <button id="exportDataParamBtn" class="btn-secondary">💾 Exporter les données (JSON)</button>
+                <button id="importDataParamBtn" class="btn-secondary">📂 Importer les données (JSON)</button>
+                <input type="file" id="importDataFileParam" accept=".json" style="display:none;">
+            </div>
+            <div class="inline-buttons" style="margin-top:10px;">
+                <button id="exportSettingsBtn" class="btn-secondary">💾 Exporter les paramètres (logo + textes)</button>
+                <button id="importSettingsBtn" class="btn-secondary">📂 Importer les paramètres (JSON)</button>
+                <input type="file" id="importSettingsFile" accept=".json" style="display:none;">
+            </div>
+        </div></div>
+        <!-- UTILISATEURS --><div id="usersSection" class="section"><div class="card"><div class="card-header">Gestion des utilisateurs</div>
+            <div class="form-group"><label>Nom d'utilisateur</label><input type="text" id="newUsername" placeholder="ex: manager"></div>
+            <div class="form-group"><label>Mot de passe</label><input type="password" id="newPassword"></div>
+            <div class="form-group"><label>Rôle</label><select id="newRole"><option value="admin">Administrateur</option><option value="manager">Gestionnaire</option><option value="viewer">Lecteur</option></select></div>
+            <button id="createUserBtn" class="btn-secondary">➕ Créer utilisateur</button>
+            <hr>
+            <h4>Liste des utilisateurs</h4>
+            <div id="usersList"></div>
+        </div></div>
+    </div>
+    <footer>SIGESCOMP by Eniktech - Licence Commerciale attribuée à la Ligue Départementale Handball Mfoundi</footer>
+</div>
+
+<script>
+    // ==================== INDEXEDDB STORAGE (HAUTE CAPACITÉ) ====================
+    class StorageManager {
+        constructor(dbName = "sigESCOMP_db", storeName = "main") {
+            this.dbName = dbName;
+            this.storeName = storeName;
+            this.db = null;
+        }
+        async open() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(this.dbName, 2); // version 2 pour ajouter store users
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    this.db = request.result;
+                    resolve();
+                };
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    if (!db.objectStoreNames.contains(this.storeName)) {
+                        db.createObjectStore(this.storeName);
+                    }
+                    if (!db.objectStoreNames.contains("users")) {
+                        const userStore = db.createObjectStore("users", { keyPath: "username" });
+                        // Créer admin par défaut
+                        const adminHash = CryptoJS.SHA256("admin").toString();
+                        userStore.put({ username: "admin", passwordHash: adminHash, role: "admin" });
+                    }
+                };
+            });
+        }
+        async setItem(key, value) {
+            return new Promise((resolve, reject) => {
+                if (!this.db) return reject("Base non ouverte");
+                const transaction = this.db.transaction([this.storeName], "readwrite");
+                const store = transaction.objectStore(this.storeName);
+                const request = store.put(value, key);
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+        async getItem(key) {
+            return new Promise((resolve, reject) => {
+                if (!this.db) return reject("Base non ouverte");
+                const transaction = this.db.transaction([this.storeName], "readonly");
+                const store = transaction.objectStore(this.storeName);
+                const request = store.get(key);
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+        async getAllUsers() {
+            return new Promise((resolve, reject) => {
+                if (!this.db) return reject("Base non ouverte");
+                const transaction = this.db.transaction(["users"], "readonly");
+                const store = transaction.objectStore("users");
+                const request = store.getAll();
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+        async addUser(user) {
+            return new Promise((resolve, reject) => {
+                if (!this.db) return reject("Base non ouverte");
+                const transaction = this.db.transaction(["users"], "readwrite");
+                const store = transaction.objectStore("users");
+                const request = store.add(user);
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+        async deleteUser(username) {
+            return new Promise((resolve, reject) => {
+                if (!this.db) return reject("Base non ouverte");
+                const transaction = this.db.transaction(["users"], "readwrite");
+                const store = transaction.objectStore("users");
+                const request = store.delete(username);
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+        async verifyUser(username, password) {
+            const users = await this.getAllUsers();
+            const user = users.find(u => u.username === username);
+            if (!user) return null;
+            const hash = CryptoJS.SHA256(password).toString();
+            if (user.passwordHash === hash) return { username: user.username, role: user.role };
+            return null;
+        }
+    }
+
+    const storage = new StorageManager("sigESCOMP_db", "mainData");
+    let storageReady = false;
+    let currentUser = null; // { username, role }
+
+    // ==================== DONNÉES DE L'APPLICATION ====================
+    let db = { saisons: [], competitions: [], categories: [], equipes: [], matchs: [], poules: [], sanctionsTypes: [], penalites: [], appSettings: { logoBase64: "", headerCustomText: "", footerCustomText: "" } };
+    let currentSaisonId = null;
+    let nextMatchId = 1000;
+    const STORAGE_SELECTORS_KEY = "sigESCOMP_selectors";
+    const DB_KEY = "mainData";
+
+    // ==================== FONCTIONS D'AIDE ====================
+    function saveSelector(categoryId, value) { let selectors = JSON.parse(localStorage.getItem(STORAGE_SELECTORS_KEY) || "{}"); selectors[categoryId] = value; localStorage.setItem(STORAGE_SELECTORS_KEY, JSON.stringify(selectors)); }
+    function getSavedSelector(categoryId) { let selectors = JSON.parse(localStorage.getItem(STORAGE_SELECTORS_KEY) || "{}"); return selectors[categoryId] || null; }
+    function hasPermission(requiredRole) {
+        if (!currentUser) return false;
+        if (currentUser.role === "admin") return true;
+        if (requiredRole === "admin") return false;
+        if (requiredRole === "manager" && (currentUser.role === "manager" || currentUser.role === "admin")) return true;
+        if (requiredRole === "viewer") return true;
+        return false;
+    }
+    function applyPermissionsToUI() {
+        const isAdmin = currentUser.role === "admin";
+        const isManager = currentUser.role === "manager";
+        const isViewer = currentUser.role === "viewer";
+        // Onglet utilisateurs : seulement admin
+        const usersTab = document.getElementById("usersTabBtn");
+        if (usersTab) usersTab.style.display = isAdmin ? "inline-block" : "none";
+        // Désactiver les champs de saisie pour les viewers
+        const allInputs = document.querySelectorAll('#mainApp input, #mainApp select, #mainApp textarea, #mainApp button:not(#logoutBtn)');
+        allInputs.forEach(el => {
+            if (isViewer) {
+                el.disabled = true;
+                el.classList.add("disabled-field");
+            } else {
+                el.disabled = false;
+                el.classList.remove("disabled-field");
+            }
+        });
+        // Permettre l'impression et la consultation
+        if (isViewer) {
+            document.getElementById("genererRapportBtn").disabled = false;
+            document.getElementById("genererCalendrierBtn").disabled = false;
+            document.getElementById("genererCalendrierCompletBtn").disabled = false;
+            document.getElementById("classementCategorieSelect").disabled = false;
+            document.getElementById("calendrierCategorieSelect").disabled = false;
+            document.getElementById("rapportCategorieSelect").disabled = false;
+        }
+        // Masquer certains boutons pour les managers (ex: paramètres sensibles)
+        if (!isAdmin && !isManager) {
+            // viewer ne voit pas paramètres
+            const paramBtn = document.querySelector('[data-tab="parametres"]');
+            if (paramBtn) paramBtn.style.display = "none";
+        } else {
+            const paramBtn = document.querySelector('[data-tab="parametres"]');
+            if (paramBtn) paramBtn.style.display = "inline-block";
+        }
+    }
+
+    // ==================== GESTION DES UTILISATEURS ====================
+    async function loadUsersAndDisplay() {
+        if (!hasPermission("admin")) return;
+        const users = await storage.getAllUsers();
+        let html = `<table class="table"><thead><tr><th>Nom d'utilisateur</th><th>Rôle</th><th>Action</th></tr></thead><tbody>`;
+        for (let u of users) {
+            if (u.username === "admin") continue; // ne pas supprimer admin
+            html += `<tr><td>${u.username}</td><td>${u.role}</td><td><button class="btn-sm btn-danger" onclick="deleteUserAccount('${u.username}')">Supprimer</button></td></tr>`;
+        }
+        html += `</tbody></table>`;
+        document.getElementById("usersList").innerHTML = html;
+    }
+    window.deleteUserAccount = async function(username) {
+        if (!hasPermission("admin")) return;
+        if (confirm(`Supprimer l'utilisateur "${username}" ?`)) {
+            await storage.deleteUser(username);
+            await loadUsersAndDisplay();
+        }
+    };
+    async function createUser() {
+        if (!hasPermission("admin")) return;
+        const username = document.getElementById("newUsername").value.trim();
+        const password = document.getElementById("newPassword").value;
+        const role = document.getElementById("newRole").value;
+        if (!username || !password) { alert("Nom d'utilisateur et mot de passe requis."); return; }
+        const users = await storage.getAllUsers();
+        if (users.find(u => u.username === username)) { alert("Ce nom d'utilisateur existe déjà."); return; }
+        const passwordHash = CryptoJS.SHA256(password).toString();
+        await storage.addUser({ username, passwordHash, role });
+        alert("Utilisateur créé.");
+        document.getElementById("newUsername").value = "";
+        document.getElementById("newPassword").value = "";
+        await loadUsersAndDisplay();
+    }
+
+    // ==================== FONCTIONS DE PERSISTANCE DES DONNÉES PRINCIPALES ====================
+    async function exportAllData() {
+        const data = await storage.getItem(DB_KEY);
+        const blob = new Blob([data], {type: "application/json"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "sigESCOMP_backup.json";
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+    async function importAllData(file) {
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+            try {
+                const parsed = JSON.parse(e.target.result);
+                await storage.setItem(DB_KEY, JSON.stringify(parsed));
+                alert("Données restaurées. La page va se recharger.");
+                location.reload();
+            } catch(err) {
+                alert("Fichier invalide.");
+            }
+        };
+        reader.readAsText(file);
+    }
+    async function exportDataOnly() {
+        const full = await storage.getItem(DB_KEY);
+        if(full) {
+            const parsed = JSON.parse(full);
+            const dataOnly = {
+                saisons: parsed.saisons,
+                competitions: parsed.competitions,
+                categories: parsed.categories,
+                equipes: parsed.equipes,
+                matchs: parsed.matchs,
+                poules: parsed.poules,
+                sanctionsTypes: parsed.sanctionsTypes,
+                penalites: parsed.penalites
+            };
+            const blob = new Blob([JSON.stringify(dataOnly, null, 2)], {type: "application/json"});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "sigESCOMP_data.json";
+            a.click();
+            URL.revokeObjectURL(url);
+        } else { alert("Aucune donnée trouvée."); }
+    }
+    async function importDataOnly(file) {
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+            try {
+                const parsed = JSON.parse(e.target.result);
+                const full = await storage.getItem(DB_KEY);
+                let fullObj = full ? JSON.parse(full) : {};
+                fullObj.saisons = parsed.saisons || [];
+                fullObj.competitions = parsed.competitions || [];
+                fullObj.categories = parsed.categories || [];
+                fullObj.equipes = parsed.equipes || [];
+                fullObj.matchs = parsed.matchs || [];
+                fullObj.poules = parsed.poules || [];
+                fullObj.sanctionsTypes = parsed.sanctionsTypes || [];
+                fullObj.penalites = parsed.penalites || [];
+                if(!fullObj.appSettings) fullObj.appSettings = { logoBase64: "", headerCustomText: "", footerCustomText: "" };
+                await storage.setItem(DB_KEY, JSON.stringify(fullObj));
+                alert("Données importées. Rechargement...");
+                location.reload();
+            } catch(err) {
+                alert("Fichier invalide.");
+            }
+        };
+        reader.readAsText(file);
+    }
+    async function exportSettings() {
+        const full = await storage.getItem(DB_KEY);
+        if(full) {
+            const parsed = JSON.parse(full);
+            const settings = {
+                logoBase64: parsed.appSettings?.logoBase64 || "",
+                headerCustomText: parsed.appSettings?.headerCustomText || "",
+                footerCustomText: parsed.appSettings?.footerCustomText || ""
+            };
+            const blob = new Blob([JSON.stringify(settings, null, 2)], {type: "application/json"});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "sigESCOMP_settings.json";
+            a.click();
+            URL.revokeObjectURL(url);
+        } else { alert("Aucun paramètre trouvé."); }
+    }
+    async function importSettings(file) {
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+            try {
+                const parsed = JSON.parse(e.target.result);
+                const full = await storage.getItem(DB_KEY);
+                let fullObj = full ? JSON.parse(full) : {};
+                if(!fullObj.appSettings) fullObj.appSettings = {};
+                fullObj.appSettings.logoBase64 = parsed.logoBase64 || "";
+                fullObj.appSettings.headerCustomText = parsed.headerCustomText || "";
+                fullObj.appSettings.footerCustomText = parsed.footerCustomText || "";
+                await storage.setItem(DB_KEY, JSON.stringify(fullObj));
+                alert("Paramètres importés. Mise à jour...");
+                location.reload();
+            } catch(err) {
+                alert("Fichier invalide.");
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    async function loadData() {
+        if(!storageReady) await storage.open();
+        const saved = await storage.getItem(DB_KEY);
+        if(saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                db = { ...db, ...parsed };
+                let maxId = 0;
+                db.matchs.forEach(m => { if(m.id > maxId) maxId = m.id; });
+                if (maxId >= nextMatchId) nextMatchId = maxId + 1;
+                if (!db.appSettings) db.appSettings = { logoBase64: "", headerCustomText: "", footerCustomText: "" };
+            } catch(e) {}
+        }
+        if(!db.saisons || db.saisons.length===0){ db.saisons = [{id:1, nom:"2024-2025", cloturee: false}]; currentSaisonId=1; }
+        else { let active = db.saisons.find(s=>s.id==currentSaisonId); if(!active && db.saisons.length) currentSaisonId = db.saisons[0].id; }
+        if(!db.competitions) db.competitions = [];
+        if(!db.categories) db.categories = [];
+        if(!db.equipes) db.equipes = [];
+        if(!db.matchs) db.matchs = [];
+        if(!db.poules) db.poules = [];
+        if(!db.sanctionsTypes) db.sanctionsTypes = [];
+        if(!db.penalites) db.penalites = [];
+        if(!db.appSettings) db.appSettings = { logoBase64: "", headerCustomText: "", footerCustomText: "" };
+        normalizeData();
+        await saveData();
+        updateLogoPreview();
+        updateSettingsForm();
+    }
+    function normalizeData() { db.matchs.forEach(m => { if (m.programme === undefined) m.programme = false; if (m.scoreA_ft === undefined || m.scoreA_ft === '') m.scoreA_ft = null; if (m.scoreB_ft === undefined || m.scoreB_ft === '') m.scoreB_ft = null; if (m.homologue === undefined) m.homologue = false; if (m.date === undefined) m.date = ""; if (m.lieu === undefined) m.lieu = ""; if (m.scoreA_mt === undefined) m.scoreA_mt = null; if (m.scoreB_mt === undefined) m.scoreB_mt = null; }); }
+    async function saveData() {
+        const dataToSave = {
+            saisons: db.saisons,
+            competitions: db.competitions,
+            categories: db.categories,
+            equipes: db.equipes,
+            matchs: db.matchs,
+            poules: db.poules,
+            sanctionsTypes: db.sanctionsTypes,
+            penalites: db.penalites,
+            appSettings: db.appSettings
+        };
+        await storage.setItem(DB_KEY, JSON.stringify(dataToSave));
+    }
+    function updateSettingsForm() { document.getElementById("headerCustomText").value = db.appSettings.headerCustomText || ""; document.getElementById("footerCustomText").value = db.appSettings.footerCustomText || ""; }
+    async function saveSettings() { db.appSettings.headerCustomText = document.getElementById("headerCustomText").value; db.appSettings.footerCustomText = document.getElementById("footerCustomText").value; await saveData(); alert("Paramètres enregistrés."); }
+
+    // ==================== FONCTIONS MÉTIER ====================
+    function getEquipesByCategorie(catId){ return db.equipes.filter(e=>e.categorieId==catId); }
+    function getMatchsByCategorie(catId){ return db.matchs.filter(m=>m.categorieId==catId); }
+    function creerMatchObject(catId, eqA, eqB, journee){ return { id: nextMatchId++, categorieId: catId, equipeA: eqA, equipeB: eqB, journee: journee, date: "", lieu: "", scoreA_mt: null, scoreB_mt: null, scoreA_ft: null, scoreB_ft: null, homologue: false, programme: false }; }
+    async function genererMatchsIntegrale(catId, allerRetour){ const equipes = getEquipesByCategorie(catId); if(equipes.length<2) { alert("Il faut au moins 2 équipes."); return false; } const newMatchs = []; let journee=1; for(let i=0;i<equipes.length;i++){ for(let j=i+1;j<equipes.length;j++){ newMatchs.push(creerMatchObject(catId, equipes[i].id, equipes[j].id, journee++)); if(allerRetour==2) newMatchs.push(creerMatchObject(catId, equipes[j].id, equipes[i].id, journee++)); } } db.matchs = db.matchs.filter(m=>m.categorieId!=catId); db.matchs.push(...newMatchs); await saveData(); return true; }
+    async function genererMatchsPoules(catId, allerRetour){ const poulesCat = db.poules.filter(p=>p.categorieId==catId); if(poulesCat.length===0){ alert("Aucune poule définie"); return false; } let newMatchs = [], journee=1; for(let poule of poulesCat){ const equipesPoule = db.equipes.filter(e=>poule.equipesIds.includes(e.id)); for(let i=0;i<equipesPoule.length;i++){ for(let j=i+1;j<equipesPoule.length;j++){ newMatchs.push(creerMatchObject(catId, equipesPoule[i].id, equipesPoule[j].id, journee++)); if(allerRetour==2) newMatchs.push(creerMatchObject(catId, equipesPoule[j].id, equipesPoule[i].id, journee++)); } } } db.matchs = db.matchs.filter(m=>m.categorieId!=catId); db.matchs.push(...newMatchs); await saveData(); return true; }
+    function updateButsFromScore(m){ if(m.scoreA_ft!==null && m.scoreB_ft!==null){ m.butsA=m.scoreA_ft; m.butsB=m.scoreB_ft; } }
+    function calculerClassement(catId){
+        const equipes = getEquipesByCategorie(catId);
+        const matchs = getMatchsByCategorie(catId).filter(m=>m.homologue && m.scoreA_ft!==null);
+        let stats={};
+        equipes.forEach(e=>{ stats[e.id]={mj:0,g:0,n:0,p:0,bp:0,bc:0,diff:0,pts:0,nom:e.nom}; });
+        for(let m of matchs){
+            let a=parseInt(m.scoreA_ft), b=parseInt(m.scoreB_ft);
+            stats[m.equipeA].mj++; stats[m.equipeB].mj++;
+            stats[m.equipeA].bp+=a; stats[m.equipeA].bc+=b;
+            stats[m.equipeB].bp+=b; stats[m.equipeB].bc+=a;
+            if(a>b){ stats[m.equipeA].g++; stats[m.equipeA].pts+=2; stats[m.equipeB].p++; }
+            else if(a<b){ stats[m.equipeB].g++; stats[m.equipeB].pts+=2; stats[m.equipeA].p++; }
+            else { stats[m.equipeA].n++; stats[m.equipeB].n++; stats[m.equipeA].pts+=1; stats[m.equipeB].pts+=1; }
+        }
+        for(let id in stats) stats[id].diff = stats[id].bp - stats[id].bc;
+        return Object.values(stats).sort((a,b)=> b.pts!=a.pts ? b.pts-a.pts : b.diff-a.diff);
+    }
+    function isSaisonCloturee() { let saison = db.saisons.find(s=>s.id==currentSaisonId); return saison ? saison.cloturee : false; }
+    function bloquerSiCloture() { if(isSaisonCloturee()) { alert("Cette saison est clôturée. Vous ne pouvez plus modifier."); return true; } return false; }
+    function canModify() { return hasPermission("manager") && !isSaisonCloturee(); }
+    function canView() { return hasPermission("viewer"); }
+
+    // ==================== FONCTIONS MÉTIER AVEC VÉRIFICATION DES PERMISSIONS ====================
+    window.deleteSaison = async function(id) {
+        if(!hasPermission("manager")) return alert("Action non autorisée.");
+        if(bloquerSiCloture()) return;
+        let saison = db.saisons.find(s => s.id == id);
+        if(!saison) return;
+        if(confirm(`Supprimer définitivement la saison "${saison.nom}" ? Toutes les données associées seront supprimées.`)) {
+            let compsToDelete = db.competitions.filter(c => c.saisonId == id);
+            let compIds = compsToDelete.map(c => c.id);
+            let catsToDelete = db.categories.filter(c => compIds.includes(c.competitionId));
+            let catIds = catsToDelete.map(c => c.id);
+            db.equipes = db.equipes.filter(e => !catIds.includes(e.categorieId));
+            db.matchs = db.matchs.filter(m => !catIds.includes(m.categorieId));
+            db.poules = db.poules.filter(p => !catIds.includes(p.categorieId));
+            db.categories = db.categories.filter(c => !compIds.includes(c.competitionId));
+            db.competitions = db.competitions.filter(c => c.saisonId != id);
+            db.saisons = db.saisons.filter(s => s.id != id);
+            if(currentSaisonId == id) {
+                if(db.saisons.length > 0) currentSaisonId = db.saisons[0].id;
+                else { let newId = Date.now(); db.saisons.push({id: newId, nom: "2025-2026", cloturee: false}); currentSaisonId = newId; }
+            }
+            await saveData();
+            alert("Saison supprimée. Rechargement...");
+            location.reload();
+        }
+    };
+
+    function populateProgrammationMatches(catId){ if(!canModify() && !canView()) return; if(isSaisonCloturee()) { document.getElementById("progMatchSelect").innerHTML = '<option value="">Saison clôturée</option>'; return; } let select = document.getElementById("progMatchSelect"); if(!select) return; let matchs = getMatchsByCategorie(catId).filter(m => m.programme === false && (m.scoreA_ft === null || m.scoreA_ft === undefined)); select.innerHTML = '<option value="">-- Choisir une rencontre --</option>'; if(matchs.length === 0) { select.innerHTML = '<option value="">⚠️ Aucune rencontre disponible</option>'; return; } for(let m of matchs){ let eqA = db.equipes.find(e=>e.id==m.equipeA)?.nom || "?"; let eqB = db.equipes.find(e=>e.id==m.equipeB)?.nom || "?"; select.innerHTML += `<option value="${m.id}">[Match N°${m.id}] J${m.journee} : ${eqA} vs ${eqB}</option>`; } }
+    function displayProgrammedMatches(catId){ let matchs = getMatchsByCategorie(catId).filter(m=> m.programme===true); let html = `<table class="table"><thead><tr><th>N° Match</th><th>Journée</th><th>Équipes</th><th>Date</th><th>Lieu</th><th>Statut</th><th>Action</th></tr></thead><tbody>`; if(matchs.length===0) html += `<tr><td colspan="7">Aucune rencontre programmée.</td></tr>`; for(let m of matchs){ let eqA=db.equipes.find(e=>e.id==m.equipeA)?.nom, eqB=db.equipes.find(e=>e.id==m.equipeB)?.nom; let joue = (m.scoreA_ft!==null) ? (m.homologue ? "Homologué" : "Joué") : "À jouer"; let actionBtn = ""; if(canModify() && m.scoreA_ft===null && !m.homologue){ actionBtn = `<button class="btn-sm btn-danger" onclick="deprogrammerMatch(${m.id})">🗑️ Déprogrammer</button>`; } html += `<tr><td>${m.id}</td><td>J${m.journee}</td><td>${eqA} - ${eqB}</td><td>${m.date}</td><td>${m.lieu}</td><td>${joue}</td><td>${actionBtn}</td></tr>`; } html += `</tbody></table>`; document.getElementById("programmedMatchesList").innerHTML = html; }
+    window.deprogrammerMatch = async function(matchId){ if(!canModify()) return; if(bloquerSiCloture()) return; let m = db.matchs.find(m=>m.id==matchId); if(m && m.programme === true && m.scoreA_ft === null){ m.programme = false; m.date = ""; m.lieu = ""; await saveData(); alert("Rencontre déprogrammée."); let catId = m.categorieId; populateProgrammationMatches(catId); displayProgrammedMatches(catId); await renderAll(); } else { alert("Impossible de déprogrammer un match déjà joué ou homologué."); } };
+
+    function renderProgrammedMatchesWithScores(catId){ let matchs = getMatchsByCategorie(catId).filter(m=> m.programme===true); let container = document.getElementById("programmedMatchesWithScores"); if(!container) return; if(matchs.length===0){ container.innerHTML="<p>Aucune rencontre programmée.</p>"; return; } let html = `<table class="table"><thead><tr><th>N° Match</th><th>Journée</th><th>Équipe A</th><th>Équipe B</th><th>Date / Lieu</th><th>Mi-temps</th><th>Score final</th><th>Statut</th><th>Action</th></tr></thead><tbody>`; for(let m of matchs){ let eqA=db.equipes.find(e=>e.id==m.equipeA)?.nom, eqB=db.equipes.find(e=>e.id==m.equipeB)?.nom; let disabled = (m.homologue || !canModify() || isSaisonCloturee()) ? 'disabled' : ''; let dateLieu = `<input type="date" id="date_${m.id}" value="${m.date||''}" style="width:120px" ${disabled}> <input type="text" id="lieu_${m.id}" value="${m.lieu||''}" placeholder="Lieu" style="width:100px" ${disabled}>`; let mtInputs = `<input type="number" id="mtA_${m.id}" value="${m.scoreA_mt??''}" style="width:60px" ${disabled}> - <input type="number" id="mtB_${m.id}" value="${m.scoreB_mt??''}" style="width:60px" ${disabled}>`; let ftInputs = `<input type="number" id="ftA_${m.id}" value="${m.scoreA_ft??''}" style="width:60px" ${disabled}> - <input type="number" id="ftB_${m.id}" value="${m.scoreB_ft??''}" style="width:60px" ${disabled}>`; let statut = m.homologue ? "✅ Homologué" : (m.scoreA_ft!==null ? "⏳ Résultat saisi" : "À jouer"); let action = ""; if(canModify() && !isSaisonCloturee()){ if(!m.homologue){ action = `<button class="btn-sm" onclick="saveResultMatch(${m.id})">💾 Enreg. résultat</button>`; if(m.scoreA_ft!==null && m.scoreB_ft!==null){ action += ` <button class="btn-sm btn-secondary" onclick="validerHomologation(${m.id})">✅ Homologuer</button>`; } } else { action = `<button class="btn-sm btn-danger" onclick="annulerHomologation(${m.id})">↩️ Annuler homologation</button>`; } } else { action = "Consultation seule"; } html += `<tr><td>${m.id}</td><td>J${m.journee}</td><td>${eqA}</td><td>${eqB}</td><td>${dateLieu}</td><td>${mtInputs}</td><td>${ftInputs}</td><td>${statut}</td><td>${action}</td></tr>`; } html += `</tbody></table>`; container.innerHTML = html; }
+    window.saveResultMatch = async function(matchId){ if(!canModify()) return; if(bloquerSiCloture()) return; let m = db.matchs.find(m=>m.id==matchId); if(m && !m.homologue){
+        if(m.scoreA_ft !== null && m.scoreB_ft !== null && !confirm("Un score existe déjà. Voulez-vous le modifier ?")) return;
+        m.date = document.getElementById(`date_${matchId}`).value;
+        m.lieu = document.getElementById(`lieu_${matchId}`).value;
+        let mtA = parseInt(document.getElementById(`mtA_${matchId}`).value);
+        let mtB = parseInt(document.getElementById(`mtB_${matchId}`).value);
+        let ftA = parseInt(document.getElementById(`ftA_${matchId}`).value);
+        let ftB = parseInt(document.getElementById(`ftB_${matchId}`).value);
+        m.scoreA_mt = isNaN(mtA) ? null : mtA;
+        m.scoreB_mt = isNaN(mtB) ? null : mtB;
+        m.scoreA_ft = isNaN(ftA) ? null : ftA;
+        m.scoreB_ft = isNaN(ftB) ? null : ftB;
+        updateButsFromScore(m);
+        await saveData();
+        alert("Résultat enregistré.");
+        let catId = m.categorieId;
+        renderProgrammedMatchesWithScores(catId);
+        await renderAll();
+    } else alert("Match déjà homologué."); };
+    window.validerHomologation = async function(matchId){ if(!canModify()) return; if(bloquerSiCloture()) return; let m = db.matchs.find(m=>m.id==matchId); if(m && !m.homologue && m.scoreA_ft!==null && m.scoreB_ft!==null){
+        if(confirm("Valider l'homologation de ce match ? Les points seront comptabilisés définitivement.")){
+            m.homologue = true;
+            await saveData();
+            alert("Match homologué !");
+            let catId = m.categorieId;
+            renderProgrammedMatchesWithScores(catId);
+            await renderAll();
+        }
+    } else alert("Saisissez le score final d'abord."); };
+    window.annulerHomologation = async function(matchId){ if(!canModify()) return; if(bloquerSiCloture()) return; let m = db.matchs.find(m=>m.id==matchId); if(m && m.homologue){
+        if(confirm("Annuler l'homologation ? Le match redevient non homologué et vous pourrez modifier le score.")){
+            m.homologue = false;
+            await saveData();
+            alert("Homologation annulée.");
+            let catId = m.categorieId;
+            renderProgrammedMatchesWithScores(catId);
+            await renderAll();
+        }
+    } else alert("Ce match n'est pas homologué."); };
+
+    function updateLogoPreview() { let preview = document.getElementById("logoPreview"); if(db.appSettings.logoBase64) { preview.src = db.appSettings.logoBase64; preview.style.display = "inline-block"; } else { preview.style.display = "none"; } }
+    document.getElementById("logoUpload")?.addEventListener("change", async function(e) { const file = e.target.files[0]; if(file) { const reader = new FileReader(); reader.onload = async function(ev) { db.appSettings.logoBase64 = ev.target.result; await saveData(); updateLogoPreview(); }; reader.readAsDataURL(file); } });
+    document.getElementById("clearLogoBtn")?.addEventListener("click", async function() { db.appSettings.logoBase64 = ""; await saveData(); updateLogoPreview(); });
+
+    // ==================== GÉNÉRATION DOCUMENTS ====================
+    function getCommonHeader(logoHtml, titre, sousTitre, dateHeure, utilisateur) {
+        let headerCustom = db.appSettings.headerCustomText ? `<p style="font-style:italic;">${db.appSettings.headerCustomText}</p>` : "";
+        return `<div class="header" style="text-align:center; margin-bottom:30px; position:relative;">
+            ${logoHtml}
+            <h2>FEDERATION CAMEROUNAISE DE HANDBALL</h2>
+            <h3>LIGUE REGIONALE DE HANDBALL DU CENTRE</h3>
+            <h4>LIGUE DEPARTEMENTALE DE HANDBALL DU MFOUNDI</h4>
+            ${headerCustom}
+            <h1>${titre}</h1>
+            ${sousTitre ? `<p>${sousTitre}</p>` : ""}
+            <p><strong>Date d'impression :</strong> ${dateHeure} | <strong>Imprimé par :</strong> ${utilisateur}</p>
+        </div>`;
+    }
+    function getCommonFooter() {
+        let footerCustom = db.appSettings.footerCustomText ? `<p>${db.appSettings.footerCustomText}</p>` : "";
+        return `<div class="footer" style="text-align:center; margin-top:30px; font-size:10pt; border-top:1px solid #000; padding-top:10px;">
+            <p>Document généré par SIGESCOMP - Licence Commerciale Ligue Départementale Handball Mfoundi</p>
+            ${footerCustom}
+            <p>Page 1/1</p>
+        </div>`;
+    }
+
+    function generateCalendrierHTML(catId, isComplet = false) {
+        if(!isComplet){
+            let matchs = getMatchsByCategorie(catId);
+            if(matchs.length===0) return "<p>Aucune rencontre générée pour cette catégorie.</p>";
+            let html = `<h3>Catégorie : ${db.categories.find(c=>c.id==catId)?.nom}</h3>
+            <table class="calendrier-table">
+                <thead><tr><th>N° Match</th><th>Journée</th><th>Date</th><th>Lieu</th><th>Équipe A</th><th>Score</th><th>Équipe B</th><th>Statut</th></tr></thead>
+                <tbody>`;
+            for(let m of matchs.sort((a,b)=>a.journee-b.journee)){
+                let eqA=db.equipes.find(e=>e.id==m.equipeA)?.nom, eqB=db.equipes.find(e=>e.id==m.equipeB)?.nom;
+                let score = (m.scoreA_ft!==null) ? `${m.scoreA_ft} - ${m.scoreB_ft}` : "-";
+                let statut = m.homologue ? "Homologué" : (m.scoreA_ft!==null ? "Joué" : (m.programme ? "Programmé" : "Non programmé"));
+                html += `<tr><td>${m.id}</td><td>J${m.journee}</td><td>${m.date || "-"}</td><td>${m.lieu || "-"}</td><td>${eqA}</td><td>${score}</td><td>${eqB}</td><td>${statut}</td></tr>`;
+            }
+            html += `</tbody></table>`;
+            return html;
+        } else {
+            let catsFilter = db.categories.filter(c=>{ let comp = db.competitions.find(cp=>cp.id==c.competitionId); return comp && comp.saisonId==currentSaisonId; });
+            if(catsFilter.length===0) return "<p>Aucune catégorie trouvée pour cette saison.</p>";
+            let html = "";
+            for(let cat of catsFilter) {
+                let matchs = getMatchsByCategorie(cat.id);
+                if(matchs.length===0) continue;
+                html += `<div style="margin-top: 30px; page-break-before: avoid;">
+                    <h3>Catégorie : ${cat.nom}</h3>
+                    <table class="calendrier-table">
+                        <thead><tr><th>N° Match</th><th>Journée</th><th>Date</th><th>Lieu</th><th>Équipe A</th><th>Score</th><th>Équipe B</th><th>Statut</th></tr></thead>
+                        <tbody>`;
+                for(let m of matchs.sort((a,b)=>a.journee-b.journee)){
+                    let eqA=db.equipes.find(e=>e.id==m.equipeA)?.nom, eqB=db.equipes.find(e=>e.id==m.equipeB)?.nom;
+                    let score = (m.scoreA_ft!==null) ? `${m.scoreA_ft} - ${m.scoreB_ft}` : "-";
+                    let statut = m.homologue ? "Homologué" : (m.scoreA_ft!==null ? "Joué" : (m.programme ? "Programmé" : "Non programmé"));
+                    html += `<tr><td>${m.id}</td><td>J${m.journee}</td><td>${m.date || "-"}</td><td>${m.lieu || "-"}</td><td>${eqA}</td><td>${score}</td><td>${eqB}</td><td>${statut}</td></tr>`;
+                }
+                html += `</tbody></table></div>`;
+            }
+            if(html === "") return "<p>Aucune rencontre générée pour cette saison.</p>";
+            return html;
+        }
+    }
+
+    function showCalendrier() {
+        let catId = document.getElementById("calendrierCategorieSelect").value;
+        if(!catId) { alert("Sélectionnez une catégorie."); return; }
+        let html = generateCalendrierHTML(parseInt(catId), false);
+        let container = document.getElementById("calendrierContent");
+        container.innerHTML = html;
+        let printBtn = document.createElement("button");
+        printBtn.textContent = "🖨️ Imprimer ce calendrier";
+        printBtn.className = "btn-secondary no-print";
+        printBtn.onclick = () => {
+            let logoHtml = db.appSettings.logoBase64 ? `<img src="${db.appSettings.logoBase64}" style="max-height:80px; position:absolute; left:20px; top:20px;">` : "";
+            let now = new Date();
+            let dateHeure = now.toLocaleDateString('fr-FR') + " " + now.toLocaleTimeString('fr-FR');
+            let utilisateur = currentUser?.username || "Administrateur";
+            let categorieNom = db.categories.find(c=>c.id==parseInt(catId))?.nom || "";
+            let titre = "CALENDRIER DES RENCONTRES";
+            let sousTitre = `<strong>Catégorie :</strong> ${categorieNom}`;
+            let printWindow = window.open();
+            printWindow.document.write(`<html><head><title>Calendrier_${categorieNom}</title>
+                <style>body{font-family:'Times New Roman',Times,serif; margin:20px; font-size:12pt;}
+                .calendrier-table{border-collapse:collapse; width:100%;}
+                .calendrier-table th, .calendrier-table td{border:1px solid #000; padding:8px; text-align:left;}
+                th{background:#f2f2f2;}
+                .header{text-align:center; margin-bottom:30px; position:relative;}
+                .logo{position:absolute; left:0; top:0; max-height:80px;}
+                .footer{text-align:center; margin-top:30px; font-size:10pt; border-top:1px solid #000; padding-top:10px;}
+                .signature{margin-top:40px; text-align:right; font-style:italic;}
+                @media print { .calendrier-table th, .calendrier-table td { font-size: 9pt; } .header h2, .header h3, .header h4 { font-size: 11pt; } .header h1 { font-size: 13pt; } }
+                </style></head><body>
+                ${getCommonHeader(logoHtml, titre, sousTitre, dateHeure, utilisateur)}
+                ${generateCalendrierHTML(parseInt(catId), false)}
+                <div class="signature"><p>Pour validation,</p><p>Le Directeur de la compétition</p><p style="margin-top:40px;">(Signature et cachet)</p></div>
+                ${getCommonFooter()}
+                </body></html>`);
+            printWindow.document.close();
+            printWindow.print();
+        };
+        container.appendChild(printBtn);
+    }
+
+    function showCalendrierComplet() {
+        let html = generateCalendrierHTML(null, true);
+        let container = document.getElementById("calendrierContent");
+        container.innerHTML = html;
+        let printBtn = document.createElement("button");
+        printBtn.textContent = "🖨️ Imprimer le calendrier complet";
+        printBtn.className = "btn-secondary no-print";
+        printBtn.onclick = () => {
+            let logoHtml = db.appSettings.logoBase64 ? `<img src="${db.appSettings.logoBase64}" style="max-height:80px; position:absolute; left:20px; top:20px;">` : "";
+            let now = new Date();
+            let dateHeure = now.toLocaleDateString('fr-FR') + " " + now.toLocaleTimeString('fr-FR');
+            let utilisateur = currentUser?.username || "Administrateur";
+            let titre = "CALENDRIER GÉNÉRAL DES RENCONTRES";
+            let sousTitre = `<strong>Saison :</strong> ${db.saisons.find(s=>s.id==currentSaisonId)?.nom}`;
+            let printWindow = window.open();
+            printWindow.document.write(`<html><head><title>Calendrier_Complet</title>
+                <style>body{font-family:'Times New Roman',Times,serif; margin:20px; font-size:12pt;}
+                .calendrier-table{border-collapse:collapse; width:100%;}
+                .calendrier-table th, .calendrier-table td{border:1px solid #000; padding:8px; text-align:left;}
+                th{background:#f2f2f2;}
+                .header{text-align:center; margin-bottom:30px; position:relative;}
+                .logo{position:absolute; left:0; top:0; max-height:80px;}
+                .footer{text-align:center; margin-top:30px; font-size:10pt; border-top:1px solid #000; padding-top:10px;}
+                .signature{margin-top:40px; text-align:right; font-style:italic;}
+                @media print { .calendrier-table th, .calendrier-table td { font-size: 9pt; } .header h2, .header h3, .header h4 { font-size: 11pt; } .header h1 { font-size: 13pt; } }
+                </style></head><body>
+                ${getCommonHeader(logoHtml, titre, sousTitre, dateHeure, utilisateur)}
+                ${generateCalendrierHTML(null, true)}
+                <div class="signature"><p>Pour validation,</p><p>Le Directeur de la compétition</p><p style="margin-top:40px;">(Signature et cachet)</p></div>
+                ${getCommonFooter()}
+                </body></html>`);
+            printWindow.document.close();
+            printWindow.print();
+        };
+        container.appendChild(printBtn);
+    }
+
+    function generateFullReportHTML(){
+        let journeeLabel = document.getElementById("rapportJournee").value || "Journée x";
+        let observations = document.getElementById("rapportObservations").value;
+        let saison = db.saisons.find(s=>s.id==currentSaisonId);
+        let allCategories = db.categories.filter(c=>{
+            let comp = db.competitions.find(cp=>cp.id==c.competitionId);
+            return comp && comp.saisonId==currentSaisonId;
+        });
+        if(allCategories.length===0) return "<p>Aucune catégorie trouvée pour cette saison.</p>";
+        let logoHtml = db.appSettings.logoBase64 ? `<img src="${db.appSettings.logoBase64}" class="logo" style="max-height:80px; position:absolute; left:20px; top:20px;">` : "";
+        let now = new Date();
+        let dateHeure = now.toLocaleDateString('fr-FR') + " " + now.toLocaleTimeString('fr-FR');
+        let utilisateur = currentUser?.username || "Administrateur";
+        let titre = "PROCES-VERBAL D'HOMOLOGATION DES RENCONTRES";
+        let sousTitre = `<strong>Saison :</strong> ${saison?.nom}<br>
+        <strong>Journée :</strong> ${journeeLabel}<br>
+        <strong>Date d'édition :</strong> ${dateHeure}`;
+
+        let html = `<div class="rapport-paper">
+            ${getCommonHeader(logoHtml, titre, sousTitre, dateHeure, utilisateur)}
+            <h3>1. Résultats des rencontres homologuées (par catégorie)</h3>`;
+        for(let cat of allCategories) {
+            let matchs = getMatchsByCategorie(cat.id).filter(m=>m.homologue===true && m.scoreA_ft!==null);
+            if(matchs.length===0) continue;
+            html += `<h4>Catégorie : ${cat.nom}</h4>
+            <table border="1" cellpadding="5" cellspacing="0" style="width:100%;border-collapse:collapse; margin-bottom:20px;">
+                <thead><tr><th>N° Match</th><th>Date</th><th>Lieu</th><th>Équipe A</th><th>Score</th><th>Équipe B</th></tr></thead>
+                <tbody>`;
+            for(let m of matchs){
+                let eqA=db.equipes.find(e=>e.id==m.equipeA)?.nom, eqB=db.equipes.find(e=>e.id==m.equipeB)?.nom;
+                html+=`<tr><td>${m.id}</td><td>${m.date}</td><td>${m.lieu}</td><td>${eqA}</td><td>${m.scoreA_ft} - ${m.scoreB_ft}</td><td>${eqB}</td></tr>`;
+            }
+            html+=`</tbody></table>`;
+        }
+        html += `<h3>2. Pénalités et amendes par équipe</h3>`;
+        for(let cat of allCategories) {
+            let equipes = getEquipesByCategorie(cat.id);
+            if(equipes.length===0) continue;
+            let penalitesData = [];
+            for(let eq of equipes){
+                let penalitesEq = db.penalites.filter(p=>p.equipeId==eq.id);
+                let totalDu = penalitesEq.reduce((s,p)=> s + (p.montantTotal - (p.montantRegle||0)),0);
+                let totalRegle = penalitesEq.reduce((s,p)=> s + (p.montantRegle||0),0);
+                penalitesData.push({ nom: eq.nom, totalDu, totalRegle, reste: totalDu - totalRegle });
+            }
+            if(penalitesData.length===0) continue;
+            html += `<h4>Catégorie : ${cat.nom}</h4>
+            <table border="1" style="width:100%;border-collapse:collapse; margin-bottom:20px;">
+                <thead><tr><th>Équipe</th><th>Total dû (FCFA)</th><th>Réglé</th><th>Reste à payer</th></tr></thead>
+                <tbody>`;
+            for(let p of penalitesData){
+                html+=`<tr><td>${p.nom}</td><td>${p.totalDu}</td><td>${p.totalRegle}</td><td>${p.reste}</td></tr>`;
+            }
+            html+=`</tbody></table>`;
+        }
+        html += `<h3>3. Classements par catégorie</h3>`;
+        for(let cat of allCategories) {
+            let classement = calculerClassement(cat.id);
+            if(classement.length===0) continue;
+            html += `<h4>Catégorie : ${cat.nom}</h4>
+            <table border="1" style="width:100%;border-collapse:collapse; margin-bottom:20px;">
+                <thead><tr><th>#</th><th>Équipe</th><th>MJ</th><th>G</th><th>N</th><th>P</th><th>BP</th><th>BC</th><th>Diff</th><th>Pts</th></tr></thead>
+                <tbody>`;
+            classement.forEach((c,idx)=>{
+                html+=`<tr><td>${idx+1}</td><td>${c.nom}</td><td>${c.mj}</td><td>${c.g}</td><td>${c.n}</td><td>${c.p}</td><td>${c.bp}</td><td>${c.bc}</td><td>${c.diff}</td><td>${c.pts}</td></tr>`;
+            });
+            html+=`</tbody></table>`;
+        }
+        html += `<h3>4. Observations</h3>
+            <p>${observations || "Aucune observation particulière."}</p>
+            <div class="signature" style="margin-top:40px; text-align:right;">
+                <p>Fait à Yaoundé, le ${new Date().toLocaleDateString('fr-FR')}</p>
+                <p>Le Directeur de la compétition</p>
+                <p style="margin-top:40px;">(Signature et cachet)</p>
+            </div>
+            ${getCommonFooter()}
+        </div>`;
+        return html;
+    }
+
+    function generateAndShowReport() {
+        let html = generateFullReportHTML();
+        if(html){
+            document.getElementById("rapportContent").innerHTML = html;
+            let btnDiv = document.createElement("div");
+            btnDiv.className = "no-print";
+            btnDiv.innerHTML = `<button class="btn-secondary" onclick="window.print()">🖨️ Imprimer le PV</button>`;
+            document.getElementById("rapportContent").appendChild(btnDiv);
+        } else {
+            alert("Veuillez vérifier qu'il existe des catégories pour cette saison.");
+        }
+    }
+
+    function exportEquipesCsv() { let catId = document.getElementById("equipeCategorieSelect").value; if(!catId) { alert("Sélectionnez une catégorie."); return; } let equipes = getEquipesByCategorie(parseInt(catId)); if(equipes.length===0) { alert("Aucune équipe dans cette catégorie."); return; } let csvRows = [["Nom"]]; equipes.forEach(e => csvRows.push([e.nom])); let csvContent = csvRows.map(row => row.join(",")).join("\n"); let blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" }); let link = document.createElement("a"); let url = URL.createObjectURL(blob); link.href = url; link.setAttribute("download", `equipes_categorie_${catId}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url); }
+    function importEquipesCsv(file) { let catId = document.getElementById("equipeCategorieSelect").value; if(!catId) { alert("Sélectionnez une catégorie."); return; } let reader = new FileReader(); reader.onload = async function(e) { let text = e.target.result; let lines = text.split("\n"); if(lines.length < 2) { alert("Fichier vide ou invalide."); return; } let newEquipes = []; for(let i=1; i<lines.length; i++) { let nom = lines[i].trim().replace(/^"|"$/g, ''); if(nom) newEquipes.push(nom); } if(newEquipes.length === 0) { alert("Aucun nom trouvé."); return; } if(confirm(`Importer ${newEquipes.length} équipes ? Les équipes existantes seront remplacées.`)) { db.equipes = db.equipes.filter(e => e.categorieId != parseInt(catId)); newEquipes.forEach(nom => { db.equipes.push({ id: Date.now()+Math.random(), nom: nom, categorieId: parseInt(catId) }); }); await saveData(); await renderAll(); alert("Import réussi."); } }; reader.readAsText(file, "UTF-8"); }
+
+    // ==================== RENDU GLOBAL ====================
+    function renderSaisons(){ let html = `<ul>`; db.saisons.forEach(s => { html += `<li>${s.nom} ${currentSaisonId==s.id?"✔️ ACTIVE":""} ${s.cloturee?"🔒 Clôturée":""} <button class="btn-sm" onclick="window.setSaisonActive(${s.id})">Activer</button> ${canModify() ? `<button class="btn-sm btn-danger" onclick="window.deleteSaison(${s.id})">Supprimer</button>` : ""}</li>`; }); html += `</ul>`; document.getElementById("saisonList").innerHTML = html; let select = document.getElementById("activeSaisonSelect"); if(select) select.innerHTML = db.saisons.map(s=>`<option value="${s.id}" ${currentSaisonId==s.id?"selected":""}>${s.nom} ${s.cloturee?"(Clôturée)":""}</option>`).join(""); let compSaison = document.getElementById("compSaisonSelect"); if(compSaison) compSaison.innerHTML = db.saisons.map(s=>`<option value="${s.id}" ${currentSaisonId==s.id?"selected":""}>${s.nom}</option>`).join(""); }
+    function renderCompetitions(){ if(!canView()) return; let comps = db.competitions.filter(c=>c.saisonId==currentSaisonId); let html = `<table class="table"><thead><tr><th>Nom</th><th>Actions</th></tr></thead><tbody>`; comps.forEach(c=>{html+=`<tr><td>${c.nom}</td><td>${canModify() ? `<button class="btn-sm btn-danger" onclick="deleteCompetition(${c.id})">Supprimer</button>` : ""}</td></tr>`}); html+=`</tbody></table>`; document.getElementById("compList").innerHTML = html; let catSelect = document.getElementById("catCompetitionSelect"); if(catSelect) catSelect.innerHTML = comps.map(c=>`<option value="${c.id}">${c.nom}</option>`).join(""); }
+    function renderCategories(){ if(!canView()) return; let cats = db.categories.filter(c=>{ let comp = db.competitions.find(cp=>cp.id==c.competitionId); return comp && comp.saisonId==currentSaisonId;}); let html = `<table class="table"><thead><tr><th>Nom</th><th>Compétition</th><th>Action</th></tr></thead><tbody>`; cats.forEach(c=>{ let compNom = db.competitions.find(cp=>cp.id==c.competitionId)?.nom; html+=`<tr><td>${c.nom}</td><td>${compNom}</td><td>${canModify() ? `<button class="btn-sm btn-danger" onclick="deleteCategorie(${c.id})">Supprimer</button>` : ""}</td></tr>`}); html+=`</tbody></table>`; document.getElementById("categorieList").innerHTML = html; let equipeCatSelect = document.getElementById("equipeCategorieSelect"); if(equipeCatSelect) equipeCatSelect.innerHTML = cats.map(c=>`<option value="${c.id}">${c.nom}</option>`).join(""); let saved = getSavedSelector("equipeCategorieSelect"); if(saved && cats.some(c=>c.id==saved)) equipeCatSelect.value = saved; }
+    function renderEquipes(){ if(!canView()) return; let catId = document.getElementById("equipeCategorieSelect")?.value; if(catId){ let equipes = getEquipesByCategorie(parseInt(catId)); let html = `<table class="table"><thead><tr><th>Nom</th><th>Action</th></tr></thead><tbody>`; equipes.forEach(e=>{html+=`<tr><td>${e.nom}</td><td>${canModify() ? `<button class="btn-sm btn-danger" onclick="deleteEquipe(${e.id})">Supprimer</button>` : ""}</td></tr>`}); html+=`</tbody></table>`; document.getElementById("equipeList").innerHTML = html; } else { document.getElementById("equipeList").innerHTML = "<p>Sélectionnez une catégorie</p>"; } }
+    function renderFormuleCats(){ let catsFilter = db.categories.filter(c=>{ let comp = db.competitions.find(cp=>cp.id==c.competitionId); return comp && comp.saisonId==currentSaisonId;}); let select = document.getElementById("formuleCategorieSelect"); if(select) { select.innerHTML = catsFilter.map(c=>`<option value="${c.id}">${c.nom}</option>`).join(""); let saved = getSavedSelector("formuleCategorieSelect"); if(saved && catsFilter.some(c=>c.id==saved)) select.value = saved; } }
+    function refreshPoulesUI(){ let catIdElem = document.getElementById("formuleCategorieSelect"); if(!catIdElem) return; let catId = parseInt(catIdElem.value); if(!catId) return; let poulesCat = db.poules.filter(p=>p.categorieId==catId); let equipesDispo = getEquipesByCategorie(catId); let container = document.getElementById("poulesContainer"); if(!container) return; let htmlPoules = ``; for(let p of poulesCat){ htmlPoules += `<div style="border:1px solid #ccc; margin:10px 0; padding:10px;"><b>Poule: ${p.nomPoule}</b> ${canModify() ? `<button class="btn-sm btn-danger" onclick="window.deletePoule(${p.id})">Supprimer poule</button>` : ""}<br>`; htmlPoules += `<select id="affectEquipe_${p.id}" style="width:auto;display:inline-block; margin-right:5px;" ${!canModify() ? 'disabled' : ''}> <option value="">--Ajouter équipe--</option> ${equipesDispo.filter(e=>!p.equipesIds.includes(e.id)).map(e=>`<option value="${e.id}">${e.nom}</option>`).join("")} </select>${canModify() ? `<button class="btn-sm" onclick="window.ajouterEquipePoule(${p.id})">+ Ajouter</button>` : ""}<br><strong>Équipes :</strong> `; let equipeNames = p.equipesIds.map(eid=>db.equipes.find(e=>e.id==eid)?.nom).join(", "); htmlPoules += equipeNames || "Aucune"; htmlPoules += `</div>`; } container.innerHTML = htmlPoules || "<p>Aucune poule.</p>"; }
+    function displayGeneratedMatches(catId){ let matchs = getMatchsByCategorie(catId); let container = document.getElementById("matchsPreview"); if(!container) return; if(matchs.length===0){ container.innerHTML="<p>Aucune rencontre générée.</p>"; return; } let html = `<table class="table"><thead><tr><th>N° Match</th><th>Catégorie</th><th>Journée</th><th>Équipe A</th><th>Équipe B</th><th>Date</th><th>Lieu</th><th>Programmé</th><th>Score</th></tr></thead><tbody>`; let categorie = db.categories.find(c=>c.id==catId)?.nom || "?"; for(let m of matchs){ let eqA=db.equipes.find(e=>e.id==m.equipeA)?.nom, eqB=db.equipes.find(e=>e.id==m.equipeB)?.nom; let prog = m.programme ? "✅ Oui" : "Non"; let score = (m.scoreA_ft!==null) ? `${m.scoreA_ft} - ${m.scoreB_ft}` : "-"; html += `<tr><td>${m.id}</td><td>${categorie}</td><td>J${m.journee}</td><td>${eqA}</td><td>${eqB}</td><td>${m.date || "-"}</td><td>${m.lieu || "-"}</td><td>${prog}</td><td>${score}</td></tr>`; } html += `</tbody></table>`; container.innerHTML = html; }
+    function afficherClassement(){ let catId = document.getElementById("classementCategorieSelect")?.value; if(!catId) return; let classement = calculerClassement(parseInt(catId)); let html = `<table class="table"><thead><tr><th>#</th><th>Équipe</th><th>MJ</th><th>G</th><th>N</th><th>P</th><th>BP</th><th>BC</th><th>Diff</th><th>Pts</th></tr></thead><tbody>`; classement.forEach((c,idx)=>{html+=`<tr><td>${idx+1}</td><td>${c.nom}</td><td>${c.mj}</td><td>${c.g}</td><td>${c.n}</td><td>${c.p}</td><td>${c.bp}</td><td>${c.bc}</td><td>${c.diff}</td><td>${c.pts}</td></tr>`}); html+=`</tbody></table>`; document.getElementById("classementTable").innerHTML = html; }
+
+    async function renderAll(){ 
+        renderSaisons(); 
+        if(!canView()) return;
+        renderCompetitions(); 
+        renderCategories(); 
+        renderEquipes(); 
+        renderFormuleCats(); 
+        refreshPoulesUI(); 
+        let catIdForm = document.getElementById("formuleCategorieSelect")?.value; 
+        if(catIdForm) displayGeneratedMatches(parseInt(catIdForm)); 
+        let catsFilter = db.categories.filter(c=>{ let comp=db.competitions.find(cp=>cp.id==c.competitionId); return comp && comp.saisonId==currentSaisonId; }); 
+        let progCat = document.getElementById("progCategorieSelect"); if(progCat) { 
+            progCat.innerHTML = catsFilter.map(c=>`<option value="${c.id}">${c.nom}</option>`).join(""); 
+            let saved = getSavedSelector("progCategorieSelect"); if(saved && catsFilter.some(c=>c.id==saved)) progCat.value = saved; 
+            if(progCat.value) { populateProgrammationMatches(parseInt(progCat.value)); displayProgrammedMatches(parseInt(progCat.value)); } 
+        } 
+        let resultCat = document.getElementById("resultCategorieSelect"); if(resultCat) { 
+            resultCat.innerHTML = catsFilter.map(c=>`<option value="${c.id}">${c.nom}</option>`).join(""); 
+            let saved = getSavedSelector("resultCategorieSelect"); if(saved && catsFilter.some(c=>c.id==saved)) resultCat.value = saved; 
+            if(resultCat.value) renderProgrammedMatchesWithScores(parseInt(resultCat.value)); 
+        } 
+        let sanctionCat = document.getElementById("sanctionCategorieSelect"); if(sanctionCat) { 
+            sanctionCat.innerHTML = catsFilter.map(c=>`<option value="${c.id}">${c.nom}</option>`).join(""); 
+            let saved = getSavedSelector("sanctionCategorieSelect"); if(saved && catsFilter.some(c=>c.id==saved)) sanctionCat.value = saved; 
+            if(sanctionCat.value) { renderPenalitesEquipes(); let eqSelect = document.getElementById("sanctionEquipeSelect"); if(eqSelect) eqSelect.innerHTML = getEquipesByCategorie(parseInt(sanctionCat.value)).map(e=>`<option value="${e.id}">${e.nom}</option>`).join(""); } 
+        } 
+        let reglementCat = document.getElementById("reglementCategorieSelect"); if(reglementCat) { 
+            reglementCat.innerHTML = catsFilter.map(c=>`<option value="${c.id}">${c.nom}</option>`).join(""); 
+            let saved = getSavedSelector("reglementCategorieSelect"); if(saved && catsFilter.some(c=>c.id==saved)) reglementCat.value = saved; 
+            if(reglementCat.value) { let eqSelect = document.getElementById("reglementEquipeSelect"); if(eqSelect) eqSelect.innerHTML = getEquipesByCategorie(parseInt(reglementCat.value)).map(e=>`<option value="${e.id}">${e.nom}</option>`).join(""); } 
+        } 
+        let classCat = document.getElementById("classementCategorieSelect"); if(classCat) { 
+            classCat.innerHTML = catsFilter.map(c=>`<option value="${c.id}">${c.nom}</option>`).join(""); 
+            let saved = getSavedSelector("classementCategorieSelect"); if(saved && catsFilter.some(c=>c.id==saved)) classCat.value = saved; 
+            if(classCat.value) afficherClassement(); 
+        } 
+        let rapportCat = document.getElementById("rapportCategorieSelect"); if(rapportCat) rapportCat.innerHTML = catsFilter.map(c=>`<option value="${c.id}">${c.nom}</option>`).join(""); 
+        let calendrierCat = document.getElementById("calendrierCategorieSelect"); if(calendrierCat) calendrierCat.innerHTML = catsFilter.map(c=>`<option value="${c.id}">${c.nom}</option>`).join(""); 
+        renderSanctionsConfig(); 
+        attachSelectorSavers(); 
+    }
+    function attachSelectorSavers() { const selectors = ["equipeCategorieSelect", "formuleCategorieSelect", "progCategorieSelect", "resultCategorieSelect", "sanctionCategorieSelect", "reglementCategorieSelect", "classementCategorieSelect"]; selectors.forEach(id => { let el = document.getElementById(id); if(el && !el.hasAttribute("data-saver-attached")) { el.setAttribute("data-saver-attached", "true"); el.addEventListener("change", function() { saveSelector(id, this.value); }); } }); }
+    function renderSanctionsConfig(){ let html = `<div><h5>Types de sanctions existants :</h5>`; db.sanctionsTypes.forEach(s => { html += `<div class="sanction-item"><input type="text" id="lib_${s.id}" value="${s.libelle}" style="width:150px" ${!canModify() ? 'disabled' : ''}><input type="number" id="mt_${s.id}" value="${s.montant}" style="width:100px" ${!canModify() ? 'disabled' : ''}>${canModify() ? `<button class="btn-sm" onclick="updateSanctionType(${s.id})">💾 Modifier</button><button class="btn-sm btn-danger" onclick="deleteSanctionType(${s.id})">Supprimer</button>` : ""}</div>`; }); html += `</div>`; document.getElementById("sanctionsConfigList").innerHTML = html; let select = document.getElementById("sanctionTypeSelect"); if(select) select.innerHTML = db.sanctionsTypes.map(s=>`<option value="${s.id}">${s.libelle} (${s.montant} FCFA)</option>`).join(""); }
+    window.updateSanctionType = async function(id){ if(!canModify()) return; let newLib = document.getElementById(`lib_${id}`).value; let newMontant = parseInt(document.getElementById(`mt_${id}`).value); let s = db.sanctionsTypes.find(s=>s.id==id); if(s && newLib && !isNaN(newMontant)){ s.libelle = newLib; s.montant = newMontant; await saveData(); renderSanctionsConfig(); renderPenalitesEquipes(); } else alert("Champs invalides"); };
+    window.deleteSanctionType = async function(id){ if(!canModify()) return; if(confirm("Supprimer ce type de sanction ?")){ db.sanctionsTypes = db.sanctionsTypes.filter(s=>s.id!=id); db.penalites = db.penalites.filter(p=>p.sanctionTypeId!=id); await saveData(); renderSanctionsConfig(); renderPenalitesEquipes(); } };
+    function renderPenalitesEquipes(){ let catId = document.getElementById("sanctionCategorieSelect")?.value; if(!catId) return; let equipes = getEquipesByCategorie(parseInt(catId)); let html = `<table class="table"><thead><tr><th>Équipe</th><th>Détail sanctions</th><th>Total dû (FCFA)</th><th>Réglé (FCFA)</th><th>Reste à payer</th></tr></thead><tbody>`; for(let eq of equipes){ let penalitesEq = db.penalites.filter(p=>p.equipeId==eq.id); let totalDu = penalitesEq.reduce((sum,p)=> sum + (p.montantTotal - (p.montantRegle||0)),0); let totalRegle = penalitesEq.reduce((sum,p)=> sum + (p.montantRegle||0),0); let reste = totalDu - totalRegle; let details = penalitesEq.map(p=>{ let s=db.sanctionsTypes.find(st=>st.id==p.sanctionTypeId); return `${s?.libelle} x${p.quantite} = ${p.montantTotal} FCFA`; }).join("<br>"); html += `<tr><td>${eq.nom}</td><td>${details || "Aucune"}</td><td>${totalDu}</td><td>${totalRegle}</td><td>${reste}</td></tr>`; } html += `</tbody></table>`; document.getElementById("penalitesEquipes").innerHTML = html; let reglemCat = document.getElementById("reglementCategorieSelect"); if(reglemCat && reglemCat.value == catId){ let equipeSelect = document.getElementById("reglementEquipeSelect"); equipeSelect.innerHTML = equipes.map(e=>`<option value="${e.id}">${e.nom}</option>`).join(""); } }
+    function ajouterSanctionEquipe(equipeId, sanctionTypeId, quantite){ if(!canModify()) return; let sanction = db.sanctionsTypes.find(s=>s.id==sanctionTypeId); if(!sanction) return; let montantTotal = sanction.montant * quantite; db.penalites.push({ id: Date.now()+Math.random(), equipeId, sanctionTypeId, quantite, montantTotal, montantRegle: 0 }); saveData(); renderPenalitesEquipes(); }
+    function reglementPenalite(equipeId, montant){ if(!canModify()) return; let penalites = db.penalites.filter(p=>p.equipeId==equipeId && (p.montantTotal - (p.montantRegle||0)) >0); if(penalites.length===0) return false; let resteGlobal = penalites.reduce((sum,p)=> sum + (p.montantTotal - (p.montantRegle||0)),0); if(montant > resteGlobal) montant = resteGlobal; let aRepartir = montant; for(let p of penalites){ let reste = p.montantTotal - (p.montantRegle||0); if(aRepartir <=0) break; let deduction = Math.min(reste, aRepartir); p.montantRegle = (p.montantRegle||0) + deduction; aRepartir -= deduction; } saveData(); return true; }
+
+    window.setSaisonActive = async function(id){ currentSaisonId = id; await saveData(); await renderAll(); };
+    window.deleteCompetition = async function(id){ if(!canModify()) return; if(confirm("Supprimer cette compétition ainsi que toutes ses catégories, équipes et matchs ?")){ db.competitions = db.competitions.filter(c=>c.id!=id); db.categories = db.categories.filter(c=>c.competitionId!=id); await saveData(); await renderAll(); } };
+    window.deleteCategorie = async function(id){ if(!canModify()) return; if(confirm("Supprimer cette catégorie ainsi que toutes ses équipes et matchs ?")){ db.categories = db.categories.filter(c=>c.id!=id); db.equipes = db.equipes.filter(e=>e.categorieId!=id); db.matchs = db.matchs.filter(m=>m.categorieId!=id); db.poules = db.poules.filter(p=>p.categorieId!=id); await saveData(); await renderAll(); } };
+    window.deleteEquipe = async function(id){ if(!canModify()) return; if(confirm("Supprimer cette équipe ?")){ db.equipes = db.equipes.filter(e=>e.id!=id); db.matchs = db.matchs.filter(m=>m.equipeA!=id && m.equipeB!=id); await saveData(); await renderAll(); } };
+    window.deletePoule = async function(pouleId){ if(!canModify()) return; if(confirm("Supprimer cette poule ?")){ db.poules = db.poules.filter(p=>p.id!=pouleId); await saveData(); refreshPoulesUI(); await renderAll(); } };
+    window.ajouterEquipePoule = async function(pouleId){ if(!canModify()) return; let select = document.getElementById(`affectEquipe_${pouleId}`); let equipeId = parseInt(select.value); if(!equipeId) return; let poule = db.poules.find(p=>p.id==pouleId); if(poule && !poule.equipesIds.includes(equipeId)) poule.equipesIds.push(equipeId); await saveData(); refreshPoulesUI(); await renderAll(); };
+
+    async function bindEvents(){
+        document.getElementById("createSaisonBtn")?.addEventListener("click", async () => { if(!canModify()) return; let nom=document.getElementById("saisonName").value; if(nom){ db.saisons.push({id:Date.now(), nom, cloturee: false}); await saveData(); await renderAll(); }});
+        document.getElementById("selectSaisonBtn")?.addEventListener("click", async () => { let id=parseInt(document.getElementById("activeSaisonSelect").value); if(id){ currentSaisonId=id; await saveData(); await renderAll(); }});
+        document.getElementById("cloturerSaisonBtn")?.addEventListener("click", async () => { if(!canModify()) return; let saison = db.saisons.find(s=>s.id==currentSaisonId); if(saison) { if(confirm(`Clôturer la saison ${saison.nom} ?`)){ saison.cloturee = true; await saveData(); await renderAll(); alert("Saison clôturée."); } } });
+        document.getElementById("createCompBtn")?.addEventListener("click", async () => { if(!canModify()) return; let nom=document.getElementById("compName").value; let sid=parseInt(document.getElementById("compSaisonSelect").value); if(nom&&sid){ db.competitions.push({id:Date.now(),nom,saisonId:sid}); await saveData(); await renderAll(); }});
+        document.getElementById("createCategorieBtn")?.addEventListener("click", async () => { if(!canModify()) return; let nom=document.getElementById("catName").value; let cid=parseInt(document.getElementById("catCompetitionSelect").value); if(nom&&cid){ db.categories.push({id:Date.now(),nom,competitionId:cid}); await saveData(); await renderAll(); }});
+        document.getElementById("createEquipeBtn")?.addEventListener("click", async () => { if(!canModify()) return; let nom = document.getElementById("equipeName").value.trim(); let catId = parseInt(document.getElementById("equipeCategorieSelect").value); if(!nom || !catId) return alert("Nom et catégorie requis"); let existing = getEquipesByCategorie(catId).some(e=>e.nom.toLowerCase() === nom.toLowerCase()); if(existing) { alert("Équipe déjà existante."); return; } db.equipes.push({id:Date.now(), nom, categorieId:catId}); await saveData(); await renderAll(); });
+        document.getElementById("exportEquipesBtn")?.addEventListener("click", () => exportEquipesCsv());
+        document.getElementById("importEquipesBtn")?.addEventListener("click", () => document.getElementById("importEquipesFile").click());
+        document.getElementById("importEquipesFile")?.addEventListener("change", (e) => { if(e.target.files.length) importEquipesCsv(e.target.files[0]); e.target.value = ""; });
+        document.getElementById("genererMatchsBtn")?.addEventListener("click", async () => { if(!canModify()) return; let catId=parseInt(document.getElementById("formuleCategorieSelect").value); let formule=document.getElementById("formuleType").value; let ar=parseInt(document.getElementById("allerRetourOption").value); if(!catId) return;
+            let existingMatches = getMatchsByCategorie(catId).length;
+            if(existingMatches > 0 && !confirm("Des rencontres existent déjà pour cette catégorie. Les générer à nouveau remplacera toutes les rencontres existantes. Continuer ?")) return;
+            let ok=false; if(formule=="integrale") ok=await genererMatchsIntegrale(catId,ar); else ok=await genererMatchsPoules(catId,ar);
+            if(ok){ alert("Matchs générés !"); displayGeneratedMatches(catId); await renderAll(); } });
+        document.getElementById("addPouleBtn")?.addEventListener("click", async () => { if(!canModify()) return; let catId=parseInt(document.getElementById("formuleCategorieSelect").value); let nom=prompt("Nom poule"); if(nom&&catId){ db.poules.push({id:Date.now(),categorieId:catId,nomPoule:nom,equipesIds:[]}); await saveData(); refreshPoulesUI(); }});
+        document.getElementById("programmerMatchBtn")?.addEventListener("click", async () => { if(!canModify()) return; let selectedValue = document.getElementById("progMatchSelect").value; let matchId = Number(selectedValue); let date = document.getElementById("progDate").value; let lieu = document.getElementById("progLieu").value; if (isNaN(matchId) || matchId === 0) { alert("Sélectionnez une rencontre."); return; } if (!date || !lieu) { alert("Date et lieu requis."); return; } let m = db.matchs.find(m => m.id === matchId); if (!m) { alert("Match introuvable."); return; } if (m.programme === true) { alert("Déjà programmé."); return; } if (m.scoreA_ft !== null) { alert("Match déjà joué."); return; } m.date = date; m.lieu = lieu; m.programme = true; await saveData(); alert("Programmé !"); let catId = m.categorieId; populateProgrammationMatches(catId); displayProgrammedMatches(catId); await renderAll(); });
+        document.getElementById("progCategorieSelect")?.addEventListener("change",(e)=>{ let c=parseInt(e.target.value); if(c){ populateProgrammationMatches(c); displayProgrammedMatches(c); } });
+        document.getElementById("resultCategorieSelect")?.addEventListener("change",(e)=>{ let c=parseInt(e.target.value); if(c) renderProgrammedMatchesWithScores(c); });
+        document.getElementById("createSanctionBtn")?.addEventListener("click", async () => { if(!canModify()) return; let lib=document.getElementById("newSanctionLibelle").value; let mt=parseInt(document.getElementById("newSanctionMontant").value); if(lib&&mt){ db.sanctionsTypes.push({id:Date.now(),libelle:lib,montant:mt}); await saveData(); renderSanctionsConfig(); renderPenalitesEquipes(); } });
+        document.getElementById("ajouterSanctionEquipeBtn")?.addEventListener("click", () => { if(!canModify()) return; let equipeId=parseInt(document.getElementById("sanctionEquipeSelect").value); let typeId=parseInt(document.getElementById("sanctionTypeSelect").value); let nb=parseInt(document.getElementById("sanctionNb").value); if(equipeId&&typeId&&nb) ajouterSanctionEquipe(equipeId,typeId,nb); });
+        document.getElementById("sanctionCategorieSelect")?.addEventListener("change",()=>{ let catId=document.getElementById("sanctionCategorieSelect").value; if(catId){ let eqSelect=document.getElementById("sanctionEquipeSelect"); eqSelect.innerHTML=getEquipesByCategorie(parseInt(catId)).map(e=>`<option value="${e.id}">${e.nom}</option>`).join(""); renderPenalitesEquipes(); } });
+        document.getElementById("reglementCategorieSelect")?.addEventListener("change",(e)=>{ let catId=e.target.value; if(catId){ let eqSelect=document.getElementById("reglementEquipeSelect"); eqSelect.innerHTML=getEquipesByCategorie(parseInt(catId)).map(e=>`<option value="${e.id}">${e.nom}</option>`).join(""); } });
+        document.getElementById("reglementBtn")?.addEventListener("click", () => { if(!canModify()) return; let equipeId=parseInt(document.getElementById("reglementEquipeSelect").value); let montant=parseInt(document.getElementById("reglementMontant").value); if(equipeId&&montant){ reglementPenalite(equipeId,montant); renderPenalitesEquipes(); alert("Règlement effectué"); } });
+        document.getElementById("genererRapportBtn")?.addEventListener("click",()=>generateAndShowReport());
+        document.getElementById("genererCalendrierBtn")?.addEventListener("click",()=>showCalendrier());
+        document.getElementById("genererCalendrierCompletBtn")?.addEventListener("click",()=>showCalendrierComplet());
+        document.getElementById("formuleType")?.addEventListener("change",()=>{ document.getElementById("poulesConfig").style.display = document.getElementById("formuleType").value=="poule"?"block":"none"; });
+        document.getElementById("equipeCategorieSelect")?.addEventListener("change",()=>renderEquipes());
+        document.getElementById("logoutBtn")?.addEventListener("click",()=>{ if(confirm("Déconnecter ? Les données restent sauvegardées.")){ document.getElementById("mainApp").style.display="none"; document.getElementById("loginPanel").style.display="block"; document.getElementById("loginUsername").value=""; document.getElementById("loginPassword").value=""; } });
+        document.getElementById("saveSettingsBtn")?.addEventListener("click", async () => { if(!canModify()) return; await saveSettings(); });
+        document.getElementById("exportDataParamBtn")?.addEventListener("click", () => exportDataOnly());
+        document.getElementById("importDataParamBtn")?.addEventListener("click", () => document.getElementById("importDataFileParam").click());
+        document.getElementById("importDataFileParam")?.addEventListener("change", (e) => { if(e.target.files.length) importDataOnly(e.target.files[0]); e.target.value = ""; });
+        document.getElementById("exportSettingsBtn")?.addEventListener("click", () => exportSettings());
+        document.getElementById("importSettingsBtn")?.addEventListener("click", () => document.getElementById("importSettingsFile").click());
+        document.getElementById("importSettingsFile")?.addEventListener("change", (e) => { if(e.target.files.length) importSettings(e.target.files[0]); e.target.value = ""; });
+        document.getElementById("exportDataBtn")?.addEventListener("click", () => exportAllData());
+        document.getElementById("importDataBtn")?.addEventListener("click", () => document.getElementById("importDataFile").click());
+        document.getElementById("importDataFile")?.addEventListener("change", (e) => { if(e.target.files.length) importAllData(e.target.files[0]); e.target.value = ""; });
+        document.getElementById("createUserBtn")?.addEventListener("click", () => createUser());
+    }
+
+    function initTabs(){ const tabs=document.querySelectorAll('#mainTabs .tab-btn'); const sections=document.querySelectorAll('#mainApp .section'); tabs.forEach(btn=>{ btn.addEventListener('click',()=>{ let tabId=btn.getAttribute('data-tab'); tabs.forEach(b=>b.classList.remove('active')); sections.forEach(s=>s.classList.remove('active-section')); btn.classList.add('active'); document.getElementById(`${tabId}Section`).classList.add('active-section'); if(tabId=='formule'){ let c=document.getElementById("formuleCategorieSelect")?.value; if(c) displayGeneratedMatches(parseInt(c)); } if(tabId=='programmation'){ let c=document.getElementById("progCategorieSelect")?.value; if(c){ populateProgrammationMatches(parseInt(c)); displayProgrammedMatches(parseInt(c)); } } if(tabId=='resultat'){ let c=document.getElementById("resultCategorieSelect")?.value; if(c) renderProgrammedMatchesWithScores(parseInt(c)); } if(tabId=='sanctions') renderPenalitesEquipes(); if(tabId=='classement') afficherClassement(); if(tabId=='calendrier'){ let c=document.getElementById("calendrierCategorieSelect")?.value; if(c) showCalendrier(); } }); }); }
+
+    async function init(){ 
+        await storage.open();
+        storageReady = true;
+        // Gestion de la connexion
+        document.getElementById("doLoginBtn").onclick = async () => {
+            const username = document.getElementById("loginUsername").value;
+            const password = document.getElementById("loginPassword").value;
+            const user = await storage.verifyUser(username, password);
+            if(user) {
+                currentUser = user;
+                await loadData();
+                document.getElementById("loginPanel").style.display="none";
+                document.getElementById("mainApp").style.display="block";
+                await renderAll();
+                await bindEvents();
+                initTabs();
+                applyPermissionsToUI();
+                if(currentUser.role === "admin") {
+                    await loadUsersAndDisplay();
+                }
+            } else {
+                alert("Nom d'utilisateur ou mot de passe incorrect.");
+            }
+        };
+    }
+    init();
+</script>
+</body>
+</html>

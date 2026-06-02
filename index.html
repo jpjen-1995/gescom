@@ -61,6 +61,7 @@
     </style>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body>
 <div class="app-container" id="appRoot">
@@ -107,15 +108,24 @@
             </div>
             <div><h4>Saisons existantes</h4><div id="saisonList"></div></div>
         </div></div>
-        <!-- COMPETITION --><div id="competitionSection" class="section"><div class="card"><div class="card-header">Compétitions</div><div class="form-group"><label>Nom compétition</label><input id="compName"></div><div class="form-group"><label>Saison</label><select id="compSaisonSelect"></select></div><button id="createCompBtn">Créer</button><h4>Liste</h4><div id="compList"></div></div></div>
-        <!-- CATEGORIE --><div id="categorieSection" class="section"><div class="card"><div class="card-header">Catégories</div><div class="form-group"><label>Nom catégorie</label><input id="catName"></div><div class="form-group"><label>Compétition</label><select id="catCompetitionSelect"></select></div><button id="createCategorieBtn">Créer</button><h4>Liste</h4><div id="categorieList"></div></div></div>
-        <!-- EQUIPE --><div id="equipeSection" class="section"><div class="card"><div class="card-header">Équipes</div><div class="form-group"><label>Catégorie</label><select id="equipeCategorieSelect"></select></div><div class="form-group"><label>Nom équipe</label><input id="equipeName"></div><div class="inline-buttons"><button id="createEquipeBtn">➕ Ajouter</button><button id="exportEquipesBtn" class="btn-secondary">📎 Exporter (CSV)</button><button id="importEquipesBtn" class="btn-secondary">📂 Importer (CSV)</button><input type="file" id="importEquipesFile" accept=".csv" style="display:none;"></div><h4>Équipes engagées</h4><div id="equipeList"></div></div></div>
-        <!-- FORMULE --><div id="formuleSection" class="section"><div class="card"><div class="card-header">Formule et génération</div><div class="form-group"><label>Catégorie</label><select id="formuleCategorieSelect"></select></div><div class="form-group"><label>Type formule</label><select id="formuleType"><option value="integrale">Intégrale AR</option><option value="poule">Poules</option></select></div><div id="poulesConfig" style="display:none;"><button id="addPouleBtn" class="btn-secondary btn-sm">➕ Ajouter poule</button><div id="poulesContainer"></div></div><div class="form-group"><label>Aller/retour</label><select id="allerRetourOption"><option value="1">Aller simple</option><option value="2">Aller & Retour</option></select></div><button id="genererMatchsBtn" class="btn-secondary">⚡ Générer rencontres</button><hr><h4>Rencontres générées (avec numéro de match & catégorie)</h4><div id="matchsPreview"></div></div></div>
-        <!-- PROGRAMMATION --><div id="programmationSection" class="section"><div class="card"><div class="card-header">Programmation des rencontres</div><div class="form-group"><label>Catégorie</label><select id="progCategorieSelect"></select></div><div class="form-group"><label>Date</label><input type="date" id="progDate"></div><div class="form-group"><label>Lieu</label><input type="text" id="progLieu" placeholder="Stade"></div><div class="form-group"><label>Rencontre non programmée / non jouée</label><select id="progMatchSelect"></select></div><button id="programmerMatchBtn" class="btn-secondary">📅 Programmer</button><hr><h4>Rencontres programmées</h4><div id="programmedMatchesList" class="programmed-matches"></div></div></div>
-        <!-- RESULTATS --><div id="resultatSection" class="section"><div class="card"><div class="card-header">Résultats et homologation</div><div class="form-group"><label>Catégorie</label><select id="resultCategorieSelect"></select></div><div id="programmedMatchesWithScores" class="programmed-matches"></div></div></div>
-        <!-- SANCTIONS --><div id="sanctionsSection" class="section"><div class="card"><div class="card-header">Sanctions et pénalités</div><div class="sanction-config"><h4>⚙️ Configurer les types de sanctions</h4><div class="form-group"><label>Libellé</label><input type="text" id="newSanctionLibelle" placeholder="ex: Amende"></div><div class="form-group"><label>Montant (FCFA)</label><input type="number" id="newSanctionMontant"></div><button id="createSanctionBtn" class="btn-secondary">➕ Ajouter nouveau type</button><div id="sanctionsConfigList" style="margin-top: 15px;"></div></div><hr><h4>Appliquer une sanction à une équipe</h4><div class="form-group"><label>Catégorie</label><select id="sanctionCategorieSelect"></select></div><div class="form-group"><label>Équipe</label><select id="sanctionEquipeSelect"></select></div><div class="form-group"><label>Type de sanction</label><select id="sanctionTypeSelect"></select></div><div class="form-group"><label>Nombre d'occurrences</label><input type="number" id="sanctionNb" value="1"></div><button id="ajouterSanctionEquipeBtn">➕ Ajouter sanction</button><hr><h4>Détail des pénalités par équipe</h4><div id="penalitesEquipes"></div><hr><h4>Règlement des pénalités</h4><div class="form-group"><label>Catégorie</label><select id="reglementCategorieSelect"></select></div><div class="form-group"><label>Équipe</label><select id="reglementEquipeSelect"></select></div><div class="form-group"><label>Montant à régler (FCFA)</label><input type="number" id="reglementMontant"></div><button id="reglementBtn" class="btn-secondary">💰 Encaisser règlement</button></div></div>
-        <!-- CLASSEMENT --><div id="classementSection" class="section"><div class="card"><div class="card-header">Classement</div><div class="form-group"><label>Catégorie</label><select id="classementCategorieSelect"></select></div><div id="classementTable"></div></div></div>
-        <!-- CALENDRIER --><div id="calendrierSection" class="section"><div class="card"><div class="card-header">Calendrier général de la compétition</div>
+        <!-- COMPETITION -->
+        <div id="competitionSection" class="section"><div class="card"><div class="card-header">Compétitions</div><div class="form-group"><label>Nom compétition</label><input id="compName"></div><div class="form-group"><label>Saison</label><select id="compSaisonSelect"></select></div><button id="createCompBtn">Créer</button><h4>Liste</h4><div id="compList"></div></div></div>
+        <!-- CATEGORIE -->
+        <div id="categorieSection" class="section"><div class="card"><div class="card-header">Catégories</div><div class="form-group"><label>Nom catégorie</label><input id="catName"></div><div class="form-group"><label>Compétition</label><select id="catCompetitionSelect"></select></div><button id="createCategorieBtn">Créer</button><h4>Liste</h4><div id="categorieList"></div></div></div>
+        <!-- EQUIPE -->
+        <div id="equipeSection" class="section"><div class="card"><div class="card-header">Équipes</div><div class="form-group"><label>Catégorie</label><select id="equipeCategorieSelect"></select></div><div class="form-group"><label>Nom équipe</label><input id="equipeName"></div><div class="inline-buttons"><button id="createEquipeBtn">➕ Ajouter</button><button id="exportEquipesBtn" class="btn-secondary">📎 Exporter (CSV)</button><button id="importEquipesBtn" class="btn-secondary">📂 Importer (CSV)</button><input type="file" id="importEquipesFile" accept=".csv" style="display:none;"></div><h4>Équipes engagées</h4><div id="equipeList"></div></div></div>
+        <!-- FORMULE -->
+        <div id="formuleSection" class="section"><div class="card"><div class="card-header">Formule et génération</div><div class="form-group"><label>Catégorie</label><select id="formuleCategorieSelect"></select></div><div class="form-group"><label>Type formule</label><select id="formuleType"><option value="integrale">Intégrale AR</option><option value="poule">Poules</option></select></div><div id="poulesConfig" style="display:none;"><button id="addPouleBtn" class="btn-secondary btn-sm">➕ Ajouter poule</button><div id="poulesContainer"></div></div><div class="form-group"><label>Aller/retour</label><select id="allerRetourOption"><option value="1">Aller simple</option><option value="2">Aller & Retour</option></select></div><button id="genererMatchsBtn" class="btn-secondary">⚡ Générer rencontres</button><hr><h4>Rencontres générées (avec numéro de match & catégorie)</h4><div id="matchsPreview"></div></div></div>
+        <!-- PROGRAMMATION -->
+        <div id="programmationSection" class="section"><div class="card"><div class="card-header">Programmation des rencontres</div><div class="form-group"><label>Catégorie</label><select id="progCategorieSelect"></select></div><div class="form-group"><label>Date</label><input type="date" id="progDate"></div><div class="form-group"><label>Lieu</label><input type="text" id="progLieu" placeholder="Stade"></div><div class="form-group"><label>Rencontre non programmée / non jouée</label><select id="progMatchSelect"></select></div><button id="programmerMatchBtn" class="btn-secondary">📅 Programmer</button><hr><h4>Rencontres programmées</h4><div id="programmedMatchesList" class="programmed-matches"></div></div></div>
+        <!-- RESULTATS -->
+        <div id="resultatSection" class="section"><div class="card"><div class="card-header">Résultats et homologation</div><div class="form-group"><label>Catégorie</label><select id="resultCategorieSelect"></select></div><div id="programmedMatchesWithScores" class="programmed-matches"></div></div></div>
+        <!-- SANCTIONS -->
+        <div id="sanctionsSection" class="section"><div class="card"><div class="card-header">Sanctions et pénalités</div><div class="sanction-config"><h4>⚙️ Configurer les types de sanctions</h4><div class="form-group"><label>Libellé</label><input type="text" id="newSanctionLibelle" placeholder="ex: Amende"></div><div class="form-group"><label>Montant (FCFA)</label><input type="number" id="newSanctionMontant"></div><button id="createSanctionBtn" class="btn-secondary">➕ Ajouter nouveau type</button><div id="sanctionsConfigList" style="margin-top: 15px;"></div></div><hr><h4>Appliquer une sanction à une équipe</h4><div class="form-group"><label>Catégorie</label><select id="sanctionCategorieSelect"></select></div><div class="form-group"><label>Équipe</label><select id="sanctionEquipeSelect"></select></div><div class="form-group"><label>Type de sanction</label><select id="sanctionTypeSelect"></select></div><div class="form-group"><label>Nombre d'occurrences</label><input type="number" id="sanctionNb" value="1"></div><button id="ajouterSanctionEquipeBtn">➕ Ajouter sanction</button><hr><h4>Détail des pénalités par équipe</h4><div id="penalitesEquipes"></div><hr><h4>Règlement des pénalités</h4><div class="form-group"><label>Catégorie</label><select id="reglementCategorieSelect"></select></div><div class="form-group"><label>Équipe</label><select id="reglementEquipeSelect"></select></div><div class="form-group"><label>Montant à régler (FCFA)</label><input type="number" id="reglementMontant"></div><button id="reglementBtn" class="btn-secondary">💰 Encaisser règlement</button></div></div>
+        <!-- CLASSEMENT -->
+        <div id="classementSection" class="section"><div class="card"><div class="card-header">Classement</div><div class="form-group"><label>Catégorie</label><select id="classementCategorieSelect"></select></div><div id="classementTable"></div></div></div>
+        <!-- CALENDRIER -->
+        <div id="calendrierSection" class="section"><div class="card"><div class="card-header">Calendrier général de la compétition</div>
             <div class="form-group"><label>Catégorie</label><select id="calendrierCategorieSelect"></select></div>
             <div class="inline-buttons">
                 <button id="genererCalendrierBtn" class="btn-secondary">📅 Générer le calendrier (une catégorie)</button>
@@ -123,10 +133,20 @@
             </div>
             <div id="calendrierContent"></div>
         </div></div>
-        <!-- RAPPORT --><div id="rapportSection" class="section"><div class="card"><div class="card-header">Rapport d'homologation (PV)</div><div class="logo-upload"><label>Logo fédération (haut gauche) :</label><input type="file" id="logoUpload" accept="image/*"><img id="logoPreview" class="logo-preview" style="display:none;"><button id="clearLogoBtn" class="btn-sm btn-secondary">Effacer logo</button></div><div class="form-group"><label>Catégorie</label><select id="rapportCategorieSelect"></select></div><div class="form-group"><label>Journée / Date des rencontres</label><input type="text" id="rapportJournee" placeholder="Ex: 1ère journée"></div><div class="form-group"><label>Observations générales</label><textarea id="rapportObservations" rows="3"></textarea></div><button id="genererRapportBtn" class="btn-secondary">📄 Générer le PV</button>
-            <div id="rapportContent"></div>
+        <!-- RAPPORT -->
+        <div id="rapportSection" class="section"><div class="card"><div class="card-header">Rapport d'homologation (PV)</div>
+            <div class="logo-upload"><label>Logo fédération (haut gauche) :</label><input type="file" id="logoUpload" accept="image/*"><img id="logoPreview" class="logo-preview" style="display:none;"><button id="clearLogoBtn" class="btn-sm btn-secondary">Effacer logo</button></div>
+            <div class="form-group"><label>Catégorie</label><select id="rapportCategorieSelect"></select></div>
+            <div class="form-group"><label>Journée / Date des rencontres</label><input type="text" id="rapportJournee" placeholder="Ex: 1ère journée"></div>
+            <div class="form-group"><label>Observations générales</label><textarea id="rapportObservations" rows="3"></textarea></div>
+            <div class="inline-buttons">
+                <button id="imprimerPvBtn" class="btn-secondary">🖨️ Imprimer le PV</button>
+                <button id="telechargerPdfBtn" class="btn-secondary">📎 Télécharger PDF</button>
+            </div>
+            <div id="rapportContent" style="display:none;"></div>
         </div></div>
-        <!-- PARAMETRES --><div id="parametresSection" class="section"><div class="card"><div class="card-header">Personnalisation des documents</div>
+        <!-- PARAMETRES -->
+        <div id="parametresSection" class="section"><div class="card"><div class="card-header">Personnalisation des documents</div>
             <div class="form-group"><label>Texte personnalisé dans l'en-tête (avant les titres)</label><textarea id="headerCustomText" rows="3" placeholder="Ex: Championnat Régional 2025"></textarea></div>
             <div class="form-group"><label>Texte personnalisé dans le pied de page (après la licence)</label><textarea id="footerCustomText" rows="3" placeholder="Ex: Contact: ligue@handball.cm"></textarea></div>
             <button id="saveSettingsBtn" class="btn-secondary">💾 Enregistrer les paramètres</button>
@@ -142,7 +162,8 @@
                 <input type="file" id="importSettingsFile" accept=".json" style="display:none;">
             </div>
         </div></div>
-        <!-- UTILISATEURS --><div id="usersSection" class="section"><div class="card"><div class="card-header">Gestion des utilisateurs</div>
+        <!-- UTILISATEURS -->
+        <div id="usersSection" class="section"><div class="card"><div class="card-header">Gestion des utilisateurs</div>
             <div class="form-group"><label>Nom d'utilisateur</label><input type="text" id="newUsername" placeholder="ex: manager"></div>
             <div class="form-group"><label>Mot de passe</label><input type="password" id="newPassword"></div>
             <div class="form-group"><label>Rôle</label><select id="newRole"><option value="admin">Administrateur</option><option value="manager">Gestionnaire</option><option value="viewer">Lecteur</option></select></div>
@@ -156,7 +177,7 @@
 </div>
 
 <script>
-    // ==================== INDEXEDDB STORAGE (HAUTE CAPACITÉ) ====================
+    // ==================== INDEXEDDB STORAGE ====================
     class StorageManager {
         constructor(dbName = "sigESCOMP_db", storeName = "main") {
             this.dbName = dbName;
@@ -165,7 +186,7 @@
         }
         async open() {
             return new Promise((resolve, reject) => {
-                const request = indexedDB.open(this.dbName, 2); // version 2 pour ajouter store users
+                const request = indexedDB.open(this.dbName, 2);
                 request.onerror = () => reject(request.error);
                 request.onsuccess = () => {
                     this.db = request.result;
@@ -177,10 +198,7 @@
                         db.createObjectStore(this.storeName);
                     }
                     if (!db.objectStoreNames.contains("users")) {
-                        const userStore = db.createObjectStore("users", { keyPath: "username" });
-                        // Créer admin par défaut
-                        const adminHash = CryptoJS.SHA256("admin").toString();
-                        userStore.put({ username: "admin", passwordHash: adminHash, role: "admin" });
+                        db.createObjectStore("users", { keyPath: "username" });
                     }
                 };
             });
@@ -243,13 +261,28 @@
             if (user.passwordHash === hash) return { username: user.username, role: user.role };
             return null;
         }
+        async ensureAdminUser() {
+            const users = await this.getAllUsers();
+            const adminExists = users.find(u => u.username === "admin");
+            if (!adminExists) {
+                const adminHash = CryptoJS.SHA256("admin").toString();
+                await this.addUser({ username: "admin", passwordHash: adminHash, role: "admin" });
+                console.log("Utilisateur admin créé par défaut.");
+            } else {
+                const adminHashCheck = CryptoJS.SHA256("admin").toString();
+                if (adminExists.passwordHash !== adminHashCheck) {
+                    await this.deleteUser("admin");
+                    await this.addUser({ username: "admin", passwordHash: adminHashCheck, role: "admin" });
+                    console.log("Mot de passe admin réinitialisé à 'admin'.");
+                }
+            }
+        }
     }
 
     const storage = new StorageManager("sigESCOMP_db", "mainData");
     let storageReady = false;
-    let currentUser = null; // { username, role }
+    let currentUser = null;
 
-    // ==================== DONNÉES DE L'APPLICATION ====================
     let db = { saisons: [], competitions: [], categories: [], equipes: [], matchs: [], poules: [], sanctionsTypes: [], penalites: [], appSettings: { logoBase64: "", headerCustomText: "", footerCustomText: "" } };
     let currentSaisonId = null;
     let nextMatchId = 1000;
@@ -271,10 +304,8 @@
         const isAdmin = currentUser.role === "admin";
         const isManager = currentUser.role === "manager";
         const isViewer = currentUser.role === "viewer";
-        // Onglet utilisateurs : seulement admin
         const usersTab = document.getElementById("usersTabBtn");
         if (usersTab) usersTab.style.display = isAdmin ? "inline-block" : "none";
-        // Désactiver les champs de saisie pour les viewers
         const allInputs = document.querySelectorAll('#mainApp input, #mainApp select, #mainApp textarea, #mainApp button:not(#logoutBtn)');
         allInputs.forEach(el => {
             if (isViewer) {
@@ -285,18 +316,16 @@
                 el.classList.remove("disabled-field");
             }
         });
-        // Permettre l'impression et la consultation
         if (isViewer) {
-            document.getElementById("genererRapportBtn").disabled = false;
+            document.getElementById("imprimerPvBtn").disabled = false;
+            document.getElementById("telechargerPdfBtn").disabled = false;
             document.getElementById("genererCalendrierBtn").disabled = false;
             document.getElementById("genererCalendrierCompletBtn").disabled = false;
             document.getElementById("classementCategorieSelect").disabled = false;
             document.getElementById("calendrierCategorieSelect").disabled = false;
             document.getElementById("rapportCategorieSelect").disabled = false;
         }
-        // Masquer certains boutons pour les managers (ex: paramètres sensibles)
         if (!isAdmin && !isManager) {
-            // viewer ne voit pas paramètres
             const paramBtn = document.querySelector('[data-tab="parametres"]');
             if (paramBtn) paramBtn.style.display = "none";
         } else {
@@ -311,10 +340,10 @@
         const users = await storage.getAllUsers();
         let html = `<table class="table"><thead><tr><th>Nom d'utilisateur</th><th>Rôle</th><th>Action</th></tr></thead><tbody>`;
         for (let u of users) {
-            if (u.username === "admin") continue; // ne pas supprimer admin
-            html += `<tr><td>${u.username}</td><td>${u.role}</td><td><button class="btn-sm btn-danger" onclick="deleteUserAccount('${u.username}')">Supprimer</button></td></tr>`;
+            if (u.username === "admin") continue;
+            html += `</td><td>${u.username}</td><td>${u.role}</td><td><button class="btn-sm btn-danger" onclick="deleteUserAccount('${u.username}')">Supprimer</button></td></tr>`;
         }
-        html += `</tbody></table>`;
+        html += `</tbody></tr>`;
         document.getElementById("usersList").innerHTML = html;
     }
     window.deleteUserAccount = async function(username) {
@@ -340,7 +369,7 @@
         await loadUsersAndDisplay();
     }
 
-    // ==================== FONCTIONS DE PERSISTANCE DES DONNÉES PRINCIPALES ====================
+    // ==================== FONCTIONS DE PERSISTANCE DES DONNÉES ====================
     async function exportAllData() {
         const data = await storage.getItem(DB_KEY);
         const blob = new Blob([data], {type: "application/json"});
@@ -358,7 +387,7 @@
                 const parsed = JSON.parse(e.target.result);
                 await storage.setItem(DB_KEY, JSON.stringify(parsed));
                 alert("Données restaurées. La page va se recharger.");
-                location.reload();
+                location.reload(true);
             } catch(err) {
                 alert("Fichier invalide.");
             }
@@ -406,7 +435,7 @@
                 if(!fullObj.appSettings) fullObj.appSettings = { logoBase64: "", headerCustomText: "", footerCustomText: "" };
                 await storage.setItem(DB_KEY, JSON.stringify(fullObj));
                 alert("Données importées. Rechargement...");
-                location.reload();
+                location.reload(true);
             } catch(err) {
                 alert("Fichier invalide.");
             }
@@ -444,7 +473,7 @@
                 fullObj.appSettings.footerCustomText = parsed.footerCustomText || "";
                 await storage.setItem(DB_KEY, JSON.stringify(fullObj));
                 alert("Paramètres importés. Mise à jour...");
-                location.reload();
+                location.reload(true);
             } catch(err) {
                 alert("Fichier invalide.");
             }
@@ -527,7 +556,7 @@
     function canModify() { return hasPermission("manager") && !isSaisonCloturee(); }
     function canView() { return hasPermission("viewer"); }
 
-    // ==================== FONCTIONS MÉTIER AVEC VÉRIFICATION DES PERMISSIONS ====================
+    // ==================== FONCTIONS MÉTIER AVEC PERMISSIONS ====================
     window.deleteSaison = async function(id) {
         if(!hasPermission("manager")) return alert("Action non autorisée.");
         if(bloquerSiCloture()) return;
@@ -550,15 +579,15 @@
             }
             await saveData();
             alert("Saison supprimée. Rechargement...");
-            location.reload();
+            location.reload(true);
         }
     };
 
     function populateProgrammationMatches(catId){ if(!canModify() && !canView()) return; if(isSaisonCloturee()) { document.getElementById("progMatchSelect").innerHTML = '<option value="">Saison clôturée</option>'; return; } let select = document.getElementById("progMatchSelect"); if(!select) return; let matchs = getMatchsByCategorie(catId).filter(m => m.programme === false && (m.scoreA_ft === null || m.scoreA_ft === undefined)); select.innerHTML = '<option value="">-- Choisir une rencontre --</option>'; if(matchs.length === 0) { select.innerHTML = '<option value="">⚠️ Aucune rencontre disponible</option>'; return; } for(let m of matchs){ let eqA = db.equipes.find(e=>e.id==m.equipeA)?.nom || "?"; let eqB = db.equipes.find(e=>e.id==m.equipeB)?.nom || "?"; select.innerHTML += `<option value="${m.id}">[Match N°${m.id}] J${m.journee} : ${eqA} vs ${eqB}</option>`; } }
-    function displayProgrammedMatches(catId){ let matchs = getMatchsByCategorie(catId).filter(m=> m.programme===true); let html = `<table class="table"><thead><tr><th>N° Match</th><th>Journée</th><th>Équipes</th><th>Date</th><th>Lieu</th><th>Statut</th><th>Action</th></tr></thead><tbody>`; if(matchs.length===0) html += `<tr><td colspan="7">Aucune rencontre programmée.</td></tr>`; for(let m of matchs){ let eqA=db.equipes.find(e=>e.id==m.equipeA)?.nom, eqB=db.equipes.find(e=>e.id==m.equipeB)?.nom; let joue = (m.scoreA_ft!==null) ? (m.homologue ? "Homologué" : "Joué") : "À jouer"; let actionBtn = ""; if(canModify() && m.scoreA_ft===null && !m.homologue){ actionBtn = `<button class="btn-sm btn-danger" onclick="deprogrammerMatch(${m.id})">🗑️ Déprogrammer</button>`; } html += `<tr><td>${m.id}</td><td>J${m.journee}</td><td>${eqA} - ${eqB}</td><td>${m.date}</td><td>${m.lieu}</td><td>${joue}</td><td>${actionBtn}</td></tr>`; } html += `</tbody></table>`; document.getElementById("programmedMatchesList").innerHTML = html; }
+    function displayProgrammedMatches(catId){ let matchs = getMatchsByCategorie(catId).filter(m=> m.programme===true); let html = `<table class="table"><thead></tr><th>N° Match</th><th>Journée</th><th>Équipes</th><th>Date</th><th>Lieu</th><th>Statut</th><th>Action</th></td></thead><tbody>`; if(matchs.length===0) html += `<tr><td colspan="7">Aucune rencontre programmée.</td></tr>`; for(let m of matchs){ let eqA=db.equipes.find(e=>e.id==m.equipeA)?.nom, eqB=db.equipes.find(e=>e.id==m.equipeB)?.nom; let joue = (m.scoreA_ft!==null) ? (m.homologue ? "Homologué" : "Joué") : "À jouer"; let actionBtn = ""; if(canModify() && m.scoreA_ft===null && !m.homologue){ actionBtn = `<button class="btn-sm btn-danger" onclick="deprogrammerMatch(${m.id})">🗑️ Déprogrammer</button>`; } html += `</td><td>${m.id}</td><td>J${m.journee}</td><td>${eqA} - ${eqB}</td><td>${m.date}</td><td>${m.lieu}</td><td>${joue}</td><td>${actionBtn}</td></tr>`; } html += `</tbody></tr>`; document.getElementById("programmedMatchesList").innerHTML = html; }
     window.deprogrammerMatch = async function(matchId){ if(!canModify()) return; if(bloquerSiCloture()) return; let m = db.matchs.find(m=>m.id==matchId); if(m && m.programme === true && m.scoreA_ft === null){ m.programme = false; m.date = ""; m.lieu = ""; await saveData(); alert("Rencontre déprogrammée."); let catId = m.categorieId; populateProgrammationMatches(catId); displayProgrammedMatches(catId); await renderAll(); } else { alert("Impossible de déprogrammer un match déjà joué ou homologué."); } };
 
-    function renderProgrammedMatchesWithScores(catId){ let matchs = getMatchsByCategorie(catId).filter(m=> m.programme===true); let container = document.getElementById("programmedMatchesWithScores"); if(!container) return; if(matchs.length===0){ container.innerHTML="<p>Aucune rencontre programmée.</p>"; return; } let html = `<table class="table"><thead><tr><th>N° Match</th><th>Journée</th><th>Équipe A</th><th>Équipe B</th><th>Date / Lieu</th><th>Mi-temps</th><th>Score final</th><th>Statut</th><th>Action</th></tr></thead><tbody>`; for(let m of matchs){ let eqA=db.equipes.find(e=>e.id==m.equipeA)?.nom, eqB=db.equipes.find(e=>e.id==m.equipeB)?.nom; let disabled = (m.homologue || !canModify() || isSaisonCloturee()) ? 'disabled' : ''; let dateLieu = `<input type="date" id="date_${m.id}" value="${m.date||''}" style="width:120px" ${disabled}> <input type="text" id="lieu_${m.id}" value="${m.lieu||''}" placeholder="Lieu" style="width:100px" ${disabled}>`; let mtInputs = `<input type="number" id="mtA_${m.id}" value="${m.scoreA_mt??''}" style="width:60px" ${disabled}> - <input type="number" id="mtB_${m.id}" value="${m.scoreB_mt??''}" style="width:60px" ${disabled}>`; let ftInputs = `<input type="number" id="ftA_${m.id}" value="${m.scoreA_ft??''}" style="width:60px" ${disabled}> - <input type="number" id="ftB_${m.id}" value="${m.scoreB_ft??''}" style="width:60px" ${disabled}>`; let statut = m.homologue ? "✅ Homologué" : (m.scoreA_ft!==null ? "⏳ Résultat saisi" : "À jouer"); let action = ""; if(canModify() && !isSaisonCloturee()){ if(!m.homologue){ action = `<button class="btn-sm" onclick="saveResultMatch(${m.id})">💾 Enreg. résultat</button>`; if(m.scoreA_ft!==null && m.scoreB_ft!==null){ action += ` <button class="btn-sm btn-secondary" onclick="validerHomologation(${m.id})">✅ Homologuer</button>`; } } else { action = `<button class="btn-sm btn-danger" onclick="annulerHomologation(${m.id})">↩️ Annuler homologation</button>`; } } else { action = "Consultation seule"; } html += `<tr><td>${m.id}</td><td>J${m.journee}</td><td>${eqA}</td><td>${eqB}</td><td>${dateLieu}</td><td>${mtInputs}</td><td>${ftInputs}</td><td>${statut}</td><td>${action}</td></tr>`; } html += `</tbody></table>`; container.innerHTML = html; }
+    function renderProgrammedMatchesWithScores(catId){ let matchs = getMatchsByCategorie(catId).filter(m=> m.programme===true); let container = document.getElementById("programmedMatchesWithScores"); if(!container) return; if(matchs.length===0){ container.innerHTML="<p>Aucune rencontre programmée.</p>"; return; } let html = `<table class="table"><thead><tr><th>N° Match</th><th>Journée</th><th>Équipe A</th><th>Équipe B</th><th>Date / Lieu</th><th>Mi-temps</th><th>Score final</th><th>Statut</th><th>Action</th></td></thead><tbody>`; for(let m of matchs){ let eqA=db.equipes.find(e=>e.id==m.equipeA)?.nom, eqB=db.equipes.find(e=>e.id==m.equipeB)?.nom; let disabled = (m.homologue || !canModify() || isSaisonCloturee()) ? 'disabled' : ''; let dateLieu = `<input type="date" id="date_${m.id}" value="${m.date||''}" style="width:120px" ${disabled}> <input type="text" id="lieu_${m.id}" value="${m.lieu||''}" placeholder="Lieu" style="width:100px" ${disabled}>`; let mtInputs = `<input type="number" id="mtA_${m.id}" value="${m.scoreA_mt??''}" style="width:60px" ${disabled}> - <input type="number" id="mtB_${m.id}" value="${m.scoreB_mt??''}" style="width:60px" ${disabled}>`; let ftInputs = `<input type="number" id="ftA_${m.id}" value="${m.scoreA_ft??''}" style="width:60px" ${disabled}> - <input type="number" id="ftB_${m.id}" value="${m.scoreB_ft??''}" style="width:60px" ${disabled}>`; let statut = m.homologue ? "✅ Homologué" : (m.scoreA_ft!==null ? "⏳ Résultat saisi" : "À jouer"); let action = ""; if(canModify() && !isSaisonCloturee()){ if(!m.homologue){ action = `<button class="btn-sm" onclick="saveResultMatch(${m.id})">💾 Enreg. résultat</button>`; if(m.scoreA_ft!==null && m.scoreB_ft!==null){ action += ` <button class="btn-sm btn-secondary" onclick="validerHomologation(${m.id})">✅ Homologuer</button>`; } } else { action = `<button class="btn-sm btn-danger" onclick="annulerHomologation(${m.id})">↩️ Annuler homologation</button>`; } } else { action = "Consultation seule"; } html += `<tr><td>${m.id}</td><td>J${m.journee}</td><td>${eqA}</td><td>${eqB}</td><td>${dateLieu}</td><td>${mtInputs}</td><td>${ftInputs}</td><td>${statut}</td><td>${action}</td></tr>`; } html += `</tbody></td>`; container.innerHTML = html; }
     window.saveResultMatch = async function(matchId){ if(!canModify()) return; if(bloquerSiCloture()) return; let m = db.matchs.find(m=>m.id==matchId); if(m && !m.homologue){
         if(m.scoreA_ft !== null && m.scoreB_ft !== null && !confirm("Un score existe déjà. Voulez-vous le modifier ?")) return;
         m.date = document.getElementById(`date_${matchId}`).value;
@@ -632,13 +661,13 @@
             if(matchs.length===0) return "<p>Aucune rencontre générée pour cette catégorie.</p>";
             let html = `<h3>Catégorie : ${db.categories.find(c=>c.id==catId)?.nom}</h3>
             <table class="calendrier-table">
-                <thead><tr><th>N° Match</th><th>Journée</th><th>Date</th><th>Lieu</th><th>Équipe A</th><th>Score</th><th>Équipe B</th><th>Statut</th></tr></thead>
+                <thead></tr><th>N° Match</th><th>Journée</th><th>Date</th><th>Lieu</th><th>Équipe A</th><th>Score</th><th>Équipe B</th><th>Statut</th></tr></thead>
                 <tbody>`;
             for(let m of matchs.sort((a,b)=>a.journee-b.journee)){
                 let eqA=db.equipes.find(e=>e.id==m.equipeA)?.nom, eqB=db.equipes.find(e=>e.id==m.equipeB)?.nom;
                 let score = (m.scoreA_ft!==null) ? `${m.scoreA_ft} - ${m.scoreB_ft}` : "-";
                 let statut = m.homologue ? "Homologué" : (m.scoreA_ft!==null ? "Joué" : (m.programme ? "Programmé" : "Non programmé"));
-                html += `<tr><td>${m.id}</td><td>J${m.journee}</td><td>${m.date || "-"}</td><td>${m.lieu || "-"}</td><td>${eqA}</td><td>${score}</td><td>${eqB}</td><td>${statut}</td></tr>`;
+                html += `<tr><td>${m.id}</td><td>J${m.journee}</td><td>${m.date || "-"}</td><td>${m.lieu || "-"}</td><td>${eqA}</td><td>${score}</td><td>${eqB}</td><td>${statut}</td></td>`;
             }
             html += `</tbody></table>`;
             return html;
@@ -658,9 +687,9 @@
                     let eqA=db.equipes.find(e=>e.id==m.equipeA)?.nom, eqB=db.equipes.find(e=>e.id==m.equipeB)?.nom;
                     let score = (m.scoreA_ft!==null) ? `${m.scoreA_ft} - ${m.scoreB_ft}` : "-";
                     let statut = m.homologue ? "Homologué" : (m.scoreA_ft!==null ? "Joué" : (m.programme ? "Programmé" : "Non programmé"));
-                    html += `<tr><td>${m.id}</td><td>J${m.journee}</td><td>${m.date || "-"}</td><td>${m.lieu || "-"}</td><td>${eqA}</td><td>${score}</td><td>${eqB}</td><td>${statut}</td></tr>`;
+                    html += `</td><td>${m.id}</td><td>J${m.journee}</td><td>${m.date || "-"}</td><td>${m.lieu || "-"}</td><td>${eqA}</td><td>${score}</td><td>${eqB}</td><td>${statut}</td></tr>`;
                 }
-                html += `</tbody></table></div>`;
+                html += `</tbody><table></div>`;
             }
             if(html === "") return "<p>Aucune rencontre générée pour cette saison.</p>";
             return html;
@@ -744,111 +773,293 @@
         container.appendChild(printBtn);
     }
 
-    function generateFullReportHTML(){
+    // ==================== RAPPORT PV (NOUVEAU MODULE) ====================
+    function generateFullReportHTML() {
         let journeeLabel = document.getElementById("rapportJournee").value || "Journée x";
         let observations = document.getElementById("rapportObservations").value;
-        let saison = db.saisons.find(s=>s.id==currentSaisonId);
-        let allCategories = db.categories.filter(c=>{
-            let comp = db.competitions.find(cp=>cp.id==c.competitionId);
-            return comp && comp.saisonId==currentSaisonId;
+        let saison = db.saisons.find(s => s.id === currentSaisonId);
+        let allCategories = db.categories.filter(c => {
+            let comp = db.competitions.find(cp => cp.id === c.competitionId);
+            return comp && comp.saisonId === currentSaisonId;
         });
-        if(allCategories.length===0) return "<p>Aucune catégorie trouvée pour cette saison.</p>";
-        let logoHtml = db.appSettings.logoBase64 ? `<img src="${db.appSettings.logoBase64}" class="logo" style="max-height:80px; position:absolute; left:20px; top:20px;">` : "";
+        if (allCategories.length === 0) return "";
+
+        let logoHtml = db.appSettings.logoBase64
+            ? `<img src="${db.appSettings.logoBase64}" style="max-height:80px; display:inline-block; vertical-align:middle; margin-right:15px;">`
+            : "";
         let now = new Date();
         let dateHeure = now.toLocaleDateString('fr-FR') + " " + now.toLocaleTimeString('fr-FR');
         let utilisateur = currentUser?.username || "Administrateur";
-        let titre = "PROCES-VERBAL D'HOMOLOGATION DES RENCONTRES";
-        let sousTitre = `<strong>Saison :</strong> ${saison?.nom}<br>
-        <strong>Journée :</strong> ${journeeLabel}<br>
-        <strong>Date d'édition :</strong> ${dateHeure}`;
 
-        let html = `<div class="rapport-paper">
-            ${getCommonHeader(logoHtml, titre, sousTitre, dateHeure, utilisateur)}
-            <h3>1. Résultats des rencontres homologuées (par catégorie)</h3>`;
-        for(let cat of allCategories) {
-            let matchs = getMatchsByCategorie(cat.id).filter(m=>m.homologue===true && m.scoreA_ft!==null);
-            if(matchs.length===0) continue;
+        let html = `<!DOCTYPE html>
+        <html lang="fr">
+        <head>
+            <meta charset="UTF-8">
+            <title>Procès-verbal d'homologation</title>
+            <style>
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                body {
+                    font-family: 'Times New Roman', Times, serif;
+                    font-size: 12pt;
+                    line-height: 1.4;
+                    margin: 0;
+                    padding: 20px;
+                    background: white;
+                }
+                .container {
+                    max-width: 210mm;
+                    margin: 0 auto;
+                    background: white;
+                    padding: 15mm;
+                }
+                .header {
+                    text-align: center;
+                    margin-bottom: 20px;
+                }
+                .logo-title {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin-bottom: 10px;
+                    flex-wrap: wrap;
+                }
+                .logo-title img {
+                    max-height: 80px;
+                    margin-right: 15px;
+                }
+                .title-group {
+                    text-align: center;
+                }
+                h1 {
+                    font-size: 1.5rem;
+                    margin: 10px 0;
+                    text-transform: uppercase;
+                }
+                h2 {
+                    font-size: 1.3rem;
+                    margin: 8px 0;
+                }
+                h3 {
+                    font-size: 1.1rem;
+                    margin: 6px 0;
+                }
+                h4 {
+                    font-size: 1rem;
+                    margin: 10px 0 5px;
+                    border-bottom: 1px solid #000;
+                    padding-bottom: 3px;
+                }
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin: 15px 0;
+                    font-size: 10pt;
+                }
+                th, td {
+                    border: 1px solid #000;
+                    padding: 6px 8px;
+                    text-align: left;
+                    vertical-align: top;
+                }
+                th {
+                    background-color: #f2f2f2;
+                    font-weight: bold;
+                }
+                .signature {
+                    margin-top: 40px;
+                    text-align: right;
+                    font-style: italic;
+                }
+                .footer {
+                    text-align: center;
+                    margin-top: 30px;
+                    font-size: 8pt;
+                    border-top: 1px solid #000;
+                    padding-top: 8px;
+                    color: #333;
+                }
+                @media print {
+                    body { margin: 0; padding: 0; }
+                    .container { padding: 1cm; }
+                    .no-print { display: none; }
+                }
+            </style>
+        </head>
+        <body>
+        <div class="container">
+            <div class="header">
+                <div class="logo-title">
+                    ${logoHtml}
+                    <div class="title-group">
+                        <h2>FEDERATION CAMEROUNAISE DE HANDBALL</h2>
+                        <h3>LIGUE REGIONALE DE HANDBALL DU CENTRE</h3>
+                        <h4>LIGUE DEPARTEMENTALE DE HANDBALL DU MFOUNDI</h4>
+                    </div>
+                </div>
+                <h1>PROCES-VERBAL D'HOMOLOGATION DES RENCONTRES</h1>
+                <p><strong>Saison :</strong> ${saison?.nom} &nbsp;|&nbsp; <strong>Journée :</strong> ${journeeLabel}</p>
+                <p><strong>Date d'édition :</strong> ${dateHeure} &nbsp;|&nbsp; <strong>Imprimé par :</strong> ${utilisateur}</p>
+            </div>
+            <h3>1. Résultats des rencontres homologuées</h3>`;
+        for (let cat of allCategories) {
+            let matchs = getMatchsByCategorie(cat.id).filter(m => m.homologue === true && m.scoreA_ft !== null);
+            if (matchs.length === 0) continue;
             html += `<h4>Catégorie : ${cat.nom}</h4>
-            <table border="1" cellpadding="5" cellspacing="0" style="width:100%;border-collapse:collapse; margin-bottom:20px;">
-                <thead><tr><th>N° Match</th><th>Date</th><th>Lieu</th><th>Équipe A</th><th>Score</th><th>Équipe B</th></tr></thead>
+            <table>
+                <thead>
+                    <tr><th>N° Match</th><th>Date</th><th>Lieu</th><th>Équipe A</th><th>Score</th><th>Équipe B</th></td>
+                </thead>
                 <tbody>`;
-            for(let m of matchs){
-                let eqA=db.equipes.find(e=>e.id==m.equipeA)?.nom, eqB=db.equipes.find(e=>e.id==m.equipeB)?.nom;
-                html+=`<tr><td>${m.id}</td><td>${m.date}</td><td>${m.lieu}</td><td>${eqA}</td><td>${m.scoreA_ft} - ${m.scoreB_ft}</td><td>${eqB}</td></tr>`;
+            for (let m of matchs) {
+                let eqA = db.equipes.find(e => e.id === m.equipeA)?.nom || "?";
+                let eqB = db.equipes.find(e => e.id === m.equipeB)?.nom || "?";
+                html += `<tr>
+                    <td>${m.id}</td>
+                    <td>${m.date || "-"}</td>
+                    <td>${m.lieu || "-"}</td>
+                    <td>${eqA}</td>
+                    <td>${m.scoreA_ft} - ${m.scoreB_ft}</td>
+                    <td>${eqB}</td>
+                </tr>`;
             }
-            html+=`</tbody></table>`;
+            html += `</tbody></table>`;
         }
+
         html += `<h3>2. Pénalités et amendes par équipe</h3>`;
-        for(let cat of allCategories) {
+        for (let cat of allCategories) {
             let equipes = getEquipesByCategorie(cat.id);
-            if(equipes.length===0) continue;
+            if (equipes.length === 0) continue;
             let penalitesData = [];
-            for(let eq of equipes){
-                let penalitesEq = db.penalites.filter(p=>p.equipeId==eq.id);
-                let totalDu = penalitesEq.reduce((s,p)=> s + (p.montantTotal - (p.montantRegle||0)),0);
-                let totalRegle = penalitesEq.reduce((s,p)=> s + (p.montantRegle||0),0);
-                penalitesData.push({ nom: eq.nom, totalDu, totalRegle, reste: totalDu - totalRegle });
+            for (let eq of equipes) {
+                let penalitesEq = db.penalites.filter(p => p.equipeId === eq.id);
+                let totalDu = penalitesEq.reduce((s, p) => s + (p.montantTotal - (p.montantRegle || 0)), 0);
+                let totalRegle = penalitesEq.reduce((s, p) => s + (p.montantRegle || 0), 0);
+                if (totalDu > 0 || totalRegle > 0) {
+                    penalitesData.push({ nom: eq.nom, totalDu, totalRegle, reste: totalDu - totalRegle });
+                }
             }
-            if(penalitesData.length===0) continue;
+            if (penalitesData.length === 0) continue;
             html += `<h4>Catégorie : ${cat.nom}</h4>
-            <table border="1" style="width:100%;border-collapse:collapse; margin-bottom:20px;">
-                <thead><tr><th>Équipe</th><th>Total dû (FCFA)</th><th>Réglé</th><th>Reste à payer</th></tr></thead>
+            <table>
+                <thead>
+                    <tr><th>Équipe</th><th>Total dû (FCFA)</th><th>Réglé</th><th>Reste à payer</th></tr>
+                </thead>
                 <tbody>`;
-            for(let p of penalitesData){
-                html+=`<tr><td>${p.nom}</td><td>${p.totalDu}</td><td>${p.totalRegle}</td><td>${p.reste}</td></tr>`;
+            for (let p of penalitesData) {
+                html += `<tr>
+                    <td>${p.nom}</td>
+                    <td>${p.totalDu}</td>
+                    <td>${p.totalRegle}</td>
+                    <td>${p.reste}</td>
+                </tr>`;
             }
-            html+=`</tbody></table>`;
+            html += `</tbody></table>`;
         }
+
         html += `<h3>3. Classements par catégorie</h3>`;
-        for(let cat of allCategories) {
+        for (let cat of allCategories) {
             let classement = calculerClassement(cat.id);
-            if(classement.length===0) continue;
+            if (classement.length === 0) continue;
             html += `<h4>Catégorie : ${cat.nom}</h4>
-            <table border="1" style="width:100%;border-collapse:collapse; margin-bottom:20px;">
-                <thead><tr><th>#</th><th>Équipe</th><th>MJ</th><th>G</th><th>N</th><th>P</th><th>BP</th><th>BC</th><th>Diff</th><th>Pts</th></tr></thead>
+            <table>
+                <thead>
+                    <tr><th>#</th><th>Équipe</th><th>MJ</th><th>G</th><th>N</th><th>P</th><th>BP</th><th>BC</th><th>Diff</th><th>Pts</th></tr>
+                </thead>
                 <tbody>`;
-            classement.forEach((c,idx)=>{
-                html+=`<tr><td>${idx+1}</td><td>${c.nom}</td><td>${c.mj}</td><td>${c.g}</td><td>${c.n}</td><td>${c.p}</td><td>${c.bp}</td><td>${c.bc}</td><td>${c.diff}</td><td>${c.pts}</td></tr>`;
+            classement.forEach((c, idx) => {
+                html += `<tr>
+                    <td>${idx + 1}</td>
+                    <td>${c.nom}</td>
+                    <td>${c.mj}</td>
+                    <td>${c.g}</td>
+                    <td>${c.n}</td>
+                    <td>${c.p}</td>
+                    <td>${c.bp}</td>
+                    <td>${c.bc}</td>
+                    <td>${c.diff}</td>
+                    <td>${c.pts}</td>
+                </tr>`;
             });
-            html+=`</tbody></table>`;
+            html += `</tbody></table>`;
         }
+
         html += `<h3>4. Observations</h3>
             <p>${observations || "Aucune observation particulière."}</p>
-            <div class="signature" style="margin-top:40px; text-align:right;">
+            <div class="signature">
                 <p>Fait à Yaoundé, le ${new Date().toLocaleDateString('fr-FR')}</p>
                 <p>Le Directeur de la compétition</p>
-                <p style="margin-top:40px;">(Signature et cachet)</p>
+                <p style="margin-top: 30px;">(Signature et cachet)</p>
             </div>
-            ${getCommonFooter()}
-        </div>`;
+            <div class="footer">
+                <p>Document généré par SIGESCOMP - Licence Commerciale Ligue Départementale Handball Mfoundi</p>
+                <p>Système d'information de Gestion des Compétitions By Eniktech</p>
+            </div>
+        </div>
+        </body>
+        </html>`;
         return html;
     }
 
-    function generateAndShowReport() {
-        let html = generateFullReportHTML();
-        if(html){
-            document.getElementById("rapportContent").innerHTML = html;
-            let btnDiv = document.createElement("div");
-            btnDiv.className = "no-print";
-            btnDiv.innerHTML = `<button class="btn-secondary" onclick="window.print()">🖨️ Imprimer le PV</button>`;
-            document.getElementById("rapportContent").appendChild(btnDiv);
-        } else {
-            alert("Veuillez vérifier qu'il existe des catégories pour cette saison.");
+    function generateAndPrintReport() {
+        const fullHtml = generateFullReportHTML();
+        if (!fullHtml) {
+            alert("Aucune catégorie trouvée pour la saison active. Vérifiez vos données.");
+            return;
         }
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(fullHtml);
+        printWindow.document.close();
+        printWindow.print();
+        printWindow.onafterprint = function() { printWindow.close(); };
     }
 
-    function exportEquipesCsv() { let catId = document.getElementById("equipeCategorieSelect").value; if(!catId) { alert("Sélectionnez une catégorie."); return; } let equipes = getEquipesByCategorie(parseInt(catId)); if(equipes.length===0) { alert("Aucune équipe dans cette catégorie."); return; } let csvRows = [["Nom"]]; equipes.forEach(e => csvRows.push([e.nom])); let csvContent = csvRows.map(row => row.join(",")).join("\n"); let blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" }); let link = document.createElement("a"); let url = URL.createObjectURL(blob); link.href = url; link.setAttribute("download", `equipes_categorie_${catId}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url); }
-    function importEquipesCsv(file) { let catId = document.getElementById("equipeCategorieSelect").value; if(!catId) { alert("Sélectionnez une catégorie."); return; } let reader = new FileReader(); reader.onload = async function(e) { let text = e.target.result; let lines = text.split("\n"); if(lines.length < 2) { alert("Fichier vide ou invalide."); return; } let newEquipes = []; for(let i=1; i<lines.length; i++) { let nom = lines[i].trim().replace(/^"|"$/g, ''); if(nom) newEquipes.push(nom); } if(newEquipes.length === 0) { alert("Aucun nom trouvé."); return; } if(confirm(`Importer ${newEquipes.length} équipes ? Les équipes existantes seront remplacées.`)) { db.equipes = db.equipes.filter(e => e.categorieId != parseInt(catId)); newEquipes.forEach(nom => { db.equipes.push({ id: Date.now()+Math.random(), nom: nom, categorieId: parseInt(catId) }); }); await saveData(); await renderAll(); alert("Import réussi."); } }; reader.readAsText(file, "UTF-8"); }
+    function generateAndDownloadPDF() {
+        const fullHtml = generateFullReportHTML();
+        if (!fullHtml) {
+            alert("Aucune catégorie trouvée.");
+            return;
+        }
+        // Extraire uniquement le conteneur principal pour le PDF
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(fullHtml, 'text/html');
+        const container = doc.querySelector('.container');
+        if (!container) {
+            alert("Erreur de génération du contenu.");
+            return;
+        }
+        const styles = Array.from(doc.querySelectorAll('style')).map(style => style.outerHTML).join('');
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = `<div id="pdf-content">${styles}${container.outerHTML}</div>`;
+        tempDiv.style.position = 'absolute';
+        tempDiv.style.left = '-9999px';
+        tempDiv.style.top = '-9999px';
+        document.body.appendChild(tempDiv);
+        const element = tempDiv.querySelector('#pdf-content');
+        const opt = {
+            margin: [0.5, 0.5, 0.5, 0.5],
+            filename: `PV_Homologation_${new Date().toISOString().slice(0,19)}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true },
+            jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+        };
+        html2pdf().set(opt).from(element).save().then(() => {
+            document.body.removeChild(tempDiv);
+        }).catch(err => {
+            console.error("Erreur PDF:", err);
+            document.body.removeChild(tempDiv);
+            alert("Erreur lors de la génération du PDF.");
+        });
+    }
 
     // ==================== RENDU GLOBAL ====================
     function renderSaisons(){ let html = `<ul>`; db.saisons.forEach(s => { html += `<li>${s.nom} ${currentSaisonId==s.id?"✔️ ACTIVE":""} ${s.cloturee?"🔒 Clôturée":""} <button class="btn-sm" onclick="window.setSaisonActive(${s.id})">Activer</button> ${canModify() ? `<button class="btn-sm btn-danger" onclick="window.deleteSaison(${s.id})">Supprimer</button>` : ""}</li>`; }); html += `</ul>`; document.getElementById("saisonList").innerHTML = html; let select = document.getElementById("activeSaisonSelect"); if(select) select.innerHTML = db.saisons.map(s=>`<option value="${s.id}" ${currentSaisonId==s.id?"selected":""}>${s.nom} ${s.cloturee?"(Clôturée)":""}</option>`).join(""); let compSaison = document.getElementById("compSaisonSelect"); if(compSaison) compSaison.innerHTML = db.saisons.map(s=>`<option value="${s.id}" ${currentSaisonId==s.id?"selected":""}>${s.nom}</option>`).join(""); }
-    function renderCompetitions(){ if(!canView()) return; let comps = db.competitions.filter(c=>c.saisonId==currentSaisonId); let html = `<table class="table"><thead><tr><th>Nom</th><th>Actions</th></tr></thead><tbody>`; comps.forEach(c=>{html+=`<tr><td>${c.nom}</td><td>${canModify() ? `<button class="btn-sm btn-danger" onclick="deleteCompetition(${c.id})">Supprimer</button>` : ""}</td></tr>`}); html+=`</tbody></table>`; document.getElementById("compList").innerHTML = html; let catSelect = document.getElementById("catCompetitionSelect"); if(catSelect) catSelect.innerHTML = comps.map(c=>`<option value="${c.id}">${c.nom}</option>`).join(""); }
-    function renderCategories(){ if(!canView()) return; let cats = db.categories.filter(c=>{ let comp = db.competitions.find(cp=>cp.id==c.competitionId); return comp && comp.saisonId==currentSaisonId;}); let html = `<table class="table"><thead><tr><th>Nom</th><th>Compétition</th><th>Action</th></tr></thead><tbody>`; cats.forEach(c=>{ let compNom = db.competitions.find(cp=>cp.id==c.competitionId)?.nom; html+=`<tr><td>${c.nom}</td><td>${compNom}</td><td>${canModify() ? `<button class="btn-sm btn-danger" onclick="deleteCategorie(${c.id})">Supprimer</button>` : ""}</td></tr>`}); html+=`</tbody></table>`; document.getElementById("categorieList").innerHTML = html; let equipeCatSelect = document.getElementById("equipeCategorieSelect"); if(equipeCatSelect) equipeCatSelect.innerHTML = cats.map(c=>`<option value="${c.id}">${c.nom}</option>`).join(""); let saved = getSavedSelector("equipeCategorieSelect"); if(saved && cats.some(c=>c.id==saved)) equipeCatSelect.value = saved; }
-    function renderEquipes(){ if(!canView()) return; let catId = document.getElementById("equipeCategorieSelect")?.value; if(catId){ let equipes = getEquipesByCategorie(parseInt(catId)); let html = `<table class="table"><thead><tr><th>Nom</th><th>Action</th></tr></thead><tbody>`; equipes.forEach(e=>{html+=`<tr><td>${e.nom}</td><td>${canModify() ? `<button class="btn-sm btn-danger" onclick="deleteEquipe(${e.id})">Supprimer</button>` : ""}</td></tr>`}); html+=`</tbody></table>`; document.getElementById("equipeList").innerHTML = html; } else { document.getElementById("equipeList").innerHTML = "<p>Sélectionnez une catégorie</p>"; } }
+    function renderCompetitions(){ if(!canView()) return; let comps = db.competitions.filter(c=>c.saisonId==currentSaisonId); let html = `<table class="table"><thead></td><th>Nom</th><th>Actions</th></td></thead><tbody>`; comps.forEach(c=>{html+=`<tr><td>${c.nom}</td><td>${canModify() ? `<button class="btn-sm btn-danger" onclick="deleteCompetition(${c.id})">Supprimer</button>` : ""}</td>`}); html+=`</tbody><table>`; document.getElementById("compList").innerHTML = html; let catSelect = document.getElementById("catCompetitionSelect"); if(catSelect) catSelect.innerHTML = comps.map(c=>`<option value="${c.id}">${c.nom}</option>`).join(""); }
+    function renderCategories(){ if(!canView()) return; let cats = db.categories.filter(c=>{ let comp = db.competitions.find(cp=>cp.id==c.competitionId); return comp && comp.saisonId==currentSaisonId;}); let html = `<table class="table"><thead><tr><th>Nom</th><th>Compétition</th><th>Action</th></td></thead><tbody>`; cats.forEach(c=>{ let compNom = db.competitions.find(cp=>cp.id==c.competitionId)?.nom; html+=`</tr><td>${c.nom}</td><td>${compNom}</td><td>${canModify() ? `<button class="btn-sm btn-danger" onclick="deleteCategorie(${c.id})">Supprimer</button>` : ""}</td>`}); html+=`</tbody></table>`; document.getElementById("categorieList").innerHTML = html; let equipeCatSelect = document.getElementById("equipeCategorieSelect"); if(equipeCatSelect) equipeCatSelect.innerHTML = cats.map(c=>`<option value="${c.id}">${c.nom}</option>`).join(""); let saved = getSavedSelector("equipeCategorieSelect"); if(saved && cats.some(c=>c.id==saved)) equipeCatSelect.value = saved; }
+    function renderEquipes(){ if(!canView()) return; let catId = document.getElementById("equipeCategorieSelect")?.value; if(catId){ let equipes = getEquipesByCategorie(parseInt(catId)); let html = `<table class="table"><thead></td><th>Nom</th><th>Action</th></td></thead><tbody>`; equipes.forEach(e=>{html+=`<tr><td>${e.nom}</td><td>${canModify() ? `<button class="btn-sm btn-danger" onclick="deleteEquipe(${e.id})">Supprimer</button>` : ""}</td>`}); html+=`</tbody></td>`; document.getElementById("equipeList").innerHTML = html; } else { document.getElementById("equipeList").innerHTML = "<p>Sélectionnez une catégorie</p>"; } }
     function renderFormuleCats(){ let catsFilter = db.categories.filter(c=>{ let comp = db.competitions.find(cp=>cp.id==c.competitionId); return comp && comp.saisonId==currentSaisonId;}); let select = document.getElementById("formuleCategorieSelect"); if(select) { select.innerHTML = catsFilter.map(c=>`<option value="${c.id}">${c.nom}</option>`).join(""); let saved = getSavedSelector("formuleCategorieSelect"); if(saved && catsFilter.some(c=>c.id==saved)) select.value = saved; } }
     function refreshPoulesUI(){ let catIdElem = document.getElementById("formuleCategorieSelect"); if(!catIdElem) return; let catId = parseInt(catIdElem.value); if(!catId) return; let poulesCat = db.poules.filter(p=>p.categorieId==catId); let equipesDispo = getEquipesByCategorie(catId); let container = document.getElementById("poulesContainer"); if(!container) return; let htmlPoules = ``; for(let p of poulesCat){ htmlPoules += `<div style="border:1px solid #ccc; margin:10px 0; padding:10px;"><b>Poule: ${p.nomPoule}</b> ${canModify() ? `<button class="btn-sm btn-danger" onclick="window.deletePoule(${p.id})">Supprimer poule</button>` : ""}<br>`; htmlPoules += `<select id="affectEquipe_${p.id}" style="width:auto;display:inline-block; margin-right:5px;" ${!canModify() ? 'disabled' : ''}> <option value="">--Ajouter équipe--</option> ${equipesDispo.filter(e=>!p.equipesIds.includes(e.id)).map(e=>`<option value="${e.id}">${e.nom}</option>`).join("")} </select>${canModify() ? `<button class="btn-sm" onclick="window.ajouterEquipePoule(${p.id})">+ Ajouter</button>` : ""}<br><strong>Équipes :</strong> `; let equipeNames = p.equipesIds.map(eid=>db.equipes.find(e=>e.id==eid)?.nom).join(", "); htmlPoules += equipeNames || "Aucune"; htmlPoules += `</div>`; } container.innerHTML = htmlPoules || "<p>Aucune poule.</p>"; }
-    function displayGeneratedMatches(catId){ let matchs = getMatchsByCategorie(catId); let container = document.getElementById("matchsPreview"); if(!container) return; if(matchs.length===0){ container.innerHTML="<p>Aucune rencontre générée.</p>"; return; } let html = `<table class="table"><thead><tr><th>N° Match</th><th>Catégorie</th><th>Journée</th><th>Équipe A</th><th>Équipe B</th><th>Date</th><th>Lieu</th><th>Programmé</th><th>Score</th></tr></thead><tbody>`; let categorie = db.categories.find(c=>c.id==catId)?.nom || "?"; for(let m of matchs){ let eqA=db.equipes.find(e=>e.id==m.equipeA)?.nom, eqB=db.equipes.find(e=>e.id==m.equipeB)?.nom; let prog = m.programme ? "✅ Oui" : "Non"; let score = (m.scoreA_ft!==null) ? `${m.scoreA_ft} - ${m.scoreB_ft}` : "-"; html += `<tr><td>${m.id}</td><td>${categorie}</td><td>J${m.journee}</td><td>${eqA}</td><td>${eqB}</td><td>${m.date || "-"}</td><td>${m.lieu || "-"}</td><td>${prog}</td><td>${score}</td></tr>`; } html += `</tbody></table>`; container.innerHTML = html; }
-    function afficherClassement(){ let catId = document.getElementById("classementCategorieSelect")?.value; if(!catId) return; let classement = calculerClassement(parseInt(catId)); let html = `<table class="table"><thead><tr><th>#</th><th>Équipe</th><th>MJ</th><th>G</th><th>N</th><th>P</th><th>BP</th><th>BC</th><th>Diff</th><th>Pts</th></tr></thead><tbody>`; classement.forEach((c,idx)=>{html+=`<tr><td>${idx+1}</td><td>${c.nom}</td><td>${c.mj}</td><td>${c.g}</td><td>${c.n}</td><td>${c.p}</td><td>${c.bp}</td><td>${c.bc}</td><td>${c.diff}</td><td>${c.pts}</td></tr>`}); html+=`</tbody></table>`; document.getElementById("classementTable").innerHTML = html; }
+    function displayGeneratedMatches(catId){ let matchs = getMatchsByCategorie(catId); let container = document.getElementById("matchsPreview"); if(!container) return; if(matchs.length===0){ container.innerHTML="<p>Aucune rencontre générée.</p>"; return; } let html = `<table class="table"><thead><tr><th>N° Match</th><th>Catégorie</th><th>Journée</th><th>Équipe A</th><th>Équipe B</th><th>Date</th><th>Lieu</th><th>Programmé</th><th>Score</th></td></thead><tbody>`; let categorie = db.categories.find(c=>c.id==catId)?.nom || "?"; for(let m of matchs){ let eqA=db.equipes.find(e=>e.id==m.equipeA)?.nom, eqB=db.equipes.find(e=>e.id==m.equipeB)?.nom; let prog = m.programme ? "✅ Oui" : "Non"; let score = (m.scoreA_ft!==null) ? `${m.scoreA_ft} - ${m.scoreB_ft}` : "-"; html += `<table><td>${m.id}</td><td>${categorie}</td><td>J${m.journee}</td><td>${eqA}</td><td>${eqB}</td><td>${m.date || "-"}</td><td>${m.lieu || "-"}</td><td>${prog}</td><td>${score}</td></tr>`; } html += `</tbody></table>`; container.innerHTML = html; }
+    function afficherClassement(){ let catId = document.getElementById("classementCategorieSelect")?.value; if(!catId) return; let classement = calculerClassement(parseInt(catId)); let html = `<table class="table"><thead><tr><th>#</th><th>Équipe</th><th>MJ</th><th>G</th><th>N</th><th>P</th><th>BP</th><th>BC</th><th>Diff</th><th>Pts</th></table></thead><tbody>`; classement.forEach((c,idx)=>{html+=`<tr><td>${idx+1}</td><td>${c.nom}</td><td>${c.mj}</td><td>${c.g}</td><td>${c.n}</td><td>${c.p}</td><td>${c.bp}</td><td>${c.bc}</td><td>${c.diff}</td><td>${c.pts}</td></tr>`}); html+=`</tbody></table>`; document.getElementById("classementTable").innerHTML = html; }
 
     async function renderAll(){ 
         renderSaisons(); 
@@ -895,7 +1106,7 @@
     function renderSanctionsConfig(){ let html = `<div><h5>Types de sanctions existants :</h5>`; db.sanctionsTypes.forEach(s => { html += `<div class="sanction-item"><input type="text" id="lib_${s.id}" value="${s.libelle}" style="width:150px" ${!canModify() ? 'disabled' : ''}><input type="number" id="mt_${s.id}" value="${s.montant}" style="width:100px" ${!canModify() ? 'disabled' : ''}>${canModify() ? `<button class="btn-sm" onclick="updateSanctionType(${s.id})">💾 Modifier</button><button class="btn-sm btn-danger" onclick="deleteSanctionType(${s.id})">Supprimer</button>` : ""}</div>`; }); html += `</div>`; document.getElementById("sanctionsConfigList").innerHTML = html; let select = document.getElementById("sanctionTypeSelect"); if(select) select.innerHTML = db.sanctionsTypes.map(s=>`<option value="${s.id}">${s.libelle} (${s.montant} FCFA)</option>`).join(""); }
     window.updateSanctionType = async function(id){ if(!canModify()) return; let newLib = document.getElementById(`lib_${id}`).value; let newMontant = parseInt(document.getElementById(`mt_${id}`).value); let s = db.sanctionsTypes.find(s=>s.id==id); if(s && newLib && !isNaN(newMontant)){ s.libelle = newLib; s.montant = newMontant; await saveData(); renderSanctionsConfig(); renderPenalitesEquipes(); } else alert("Champs invalides"); };
     window.deleteSanctionType = async function(id){ if(!canModify()) return; if(confirm("Supprimer ce type de sanction ?")){ db.sanctionsTypes = db.sanctionsTypes.filter(s=>s.id!=id); db.penalites = db.penalites.filter(p=>p.sanctionTypeId!=id); await saveData(); renderSanctionsConfig(); renderPenalitesEquipes(); } };
-    function renderPenalitesEquipes(){ let catId = document.getElementById("sanctionCategorieSelect")?.value; if(!catId) return; let equipes = getEquipesByCategorie(parseInt(catId)); let html = `<table class="table"><thead><tr><th>Équipe</th><th>Détail sanctions</th><th>Total dû (FCFA)</th><th>Réglé (FCFA)</th><th>Reste à payer</th></tr></thead><tbody>`; for(let eq of equipes){ let penalitesEq = db.penalites.filter(p=>p.equipeId==eq.id); let totalDu = penalitesEq.reduce((sum,p)=> sum + (p.montantTotal - (p.montantRegle||0)),0); let totalRegle = penalitesEq.reduce((sum,p)=> sum + (p.montantRegle||0),0); let reste = totalDu - totalRegle; let details = penalitesEq.map(p=>{ let s=db.sanctionsTypes.find(st=>st.id==p.sanctionTypeId); return `${s?.libelle} x${p.quantite} = ${p.montantTotal} FCFA`; }).join("<br>"); html += `<tr><td>${eq.nom}</td><td>${details || "Aucune"}</td><td>${totalDu}</td><td>${totalRegle}</td><td>${reste}</td></tr>`; } html += `</tbody></table>`; document.getElementById("penalitesEquipes").innerHTML = html; let reglemCat = document.getElementById("reglementCategorieSelect"); if(reglemCat && reglemCat.value == catId){ let equipeSelect = document.getElementById("reglementEquipeSelect"); equipeSelect.innerHTML = equipes.map(e=>`<option value="${e.id}">${e.nom}</option>`).join(""); } }
+    function renderPenalitesEquipes(){ let catId = document.getElementById("sanctionCategorieSelect")?.value; if(!catId) return; let equipes = getEquipesByCategorie(parseInt(catId)); let html = `<table class="table"><thead></td><th>Équipe</th><th>Détail sanctions</th><th>Total dû (FCFA)</th><th>Réglé (FCFA)</th><th>Reste à payer</th></tr></thead><tbody>`; for(let eq of equipes){ let penalitesEq = db.penalites.filter(p=>p.equipeId==eq.id); let totalDu = penalitesEq.reduce((sum,p)=> sum + (p.montantTotal - (p.montantRegle||0)),0); let totalRegle = penalitesEq.reduce((sum,p)=> sum + (p.montantRegle||0),0); let reste = totalDu - totalRegle; let details = penalitesEq.map(p=>{ let s=db.sanctionsTypes.find(st=>st.id==p.sanctionTypeId); return `${s?.libelle} x${p.quantite} = ${p.montantTotal} FCFA`; }).join("<br>"); html += `<tr><td>${eq.nom}</td><td>${details || "Aucune"}</td><td>${totalDu}</td><td>${totalRegle}</td><td>${reste}</td>`; } html += `</tbody><table>`; document.getElementById("penalitesEquipes").innerHTML = html; let reglemCat = document.getElementById("reglementCategorieSelect"); if(reglemCat && reglemCat.value == catId){ let equipeSelect = document.getElementById("reglementEquipeSelect"); equipeSelect.innerHTML = equipes.map(e=>`<option value="${e.id}">${e.nom}</option>`).join(""); } }
     function ajouterSanctionEquipe(equipeId, sanctionTypeId, quantite){ if(!canModify()) return; let sanction = db.sanctionsTypes.find(s=>s.id==sanctionTypeId); if(!sanction) return; let montantTotal = sanction.montant * quantite; db.penalites.push({ id: Date.now()+Math.random(), equipeId, sanctionTypeId, quantite, montantTotal, montantRegle: 0 }); saveData(); renderPenalitesEquipes(); }
     function reglementPenalite(equipeId, montant){ if(!canModify()) return; let penalites = db.penalites.filter(p=>p.equipeId==equipeId && (p.montantTotal - (p.montantRegle||0)) >0); if(penalites.length===0) return false; let resteGlobal = penalites.reduce((sum,p)=> sum + (p.montantTotal - (p.montantRegle||0)),0); if(montant > resteGlobal) montant = resteGlobal; let aRepartir = montant; for(let p of penalites){ let reste = p.montantTotal - (p.montantRegle||0); if(aRepartir <=0) break; let deduction = Math.min(reste, aRepartir); p.montantRegle = (p.montantRegle||0) + deduction; aRepartir -= deduction; } saveData(); return true; }
 
@@ -930,7 +1141,8 @@
         document.getElementById("sanctionCategorieSelect")?.addEventListener("change",()=>{ let catId=document.getElementById("sanctionCategorieSelect").value; if(catId){ let eqSelect=document.getElementById("sanctionEquipeSelect"); eqSelect.innerHTML=getEquipesByCategorie(parseInt(catId)).map(e=>`<option value="${e.id}">${e.nom}</option>`).join(""); renderPenalitesEquipes(); } });
         document.getElementById("reglementCategorieSelect")?.addEventListener("change",(e)=>{ let catId=e.target.value; if(catId){ let eqSelect=document.getElementById("reglementEquipeSelect"); eqSelect.innerHTML=getEquipesByCategorie(parseInt(catId)).map(e=>`<option value="${e.id}">${e.nom}</option>`).join(""); } });
         document.getElementById("reglementBtn")?.addEventListener("click", () => { if(!canModify()) return; let equipeId=parseInt(document.getElementById("reglementEquipeSelect").value); let montant=parseInt(document.getElementById("reglementMontant").value); if(equipeId&&montant){ reglementPenalite(equipeId,montant); renderPenalitesEquipes(); alert("Règlement effectué"); } });
-        document.getElementById("genererRapportBtn")?.addEventListener("click",()=>generateAndShowReport());
+        document.getElementById("imprimerPvBtn")?.addEventListener("click", () => generateAndPrintReport());
+        document.getElementById("telechargerPdfBtn")?.addEventListener("click", () => generateAndDownloadPDF());
         document.getElementById("genererCalendrierBtn")?.addEventListener("click",()=>showCalendrier());
         document.getElementById("genererCalendrierCompletBtn")?.addEventListener("click",()=>showCalendrierComplet());
         document.getElementById("formuleType")?.addEventListener("change",()=>{ document.getElementById("poulesConfig").style.display = document.getElementById("formuleType").value=="poule"?"block":"none"; });
@@ -954,7 +1166,7 @@
     async function init(){ 
         await storage.open();
         storageReady = true;
-        // Gestion de la connexion
+        await storage.ensureAdminUser();
         document.getElementById("doLoginBtn").onclick = async () => {
             const username = document.getElementById("loginUsername").value;
             const password = document.getElementById("loginPassword").value;

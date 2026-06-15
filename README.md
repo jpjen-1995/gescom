@@ -1,2 +1,2 @@
 # gescom
-Handball Competition information System
+Handball Competition Information System

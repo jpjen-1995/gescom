@@ -123,7 +123,10 @@
         <!-- SANCTIONS -->
         <div id="sanctionsSection" class="section"><div class="card"><div class="card-header">Sanctions et pénalités</div><div class="sanction-config"><h4>⚙️ Configurer les types de sanctions</h4><div class="form-group"><label>Libellé</label><input type="text" id="newSanctionLibelle" placeholder="ex: Amende"></div><div class="form-group"><label>Montant (FCFA)</label><input type="number" id="newSanctionMontant"></div><button id="createSanctionBtn" class="btn-secondary">➕ Ajouter nouveau type</button><div id="sanctionsConfigList" style="margin-top: 15px;"></div></div><hr><h4>Appliquer une sanction à une équipe</h4><div class="form-group"><label>Catégorie</label><select id="sanctionCategorieSelect"></select></div><div class="form-group"><label>Équipe</label><select id="sanctionEquipeSelect"></select></div><div class="form-group"><label>Type de sanction</label><select id="sanctionTypeSelect"></select></div><div class="form-group"><label>Nombre d'occurrences</label><input type="number" id="sanctionNb" value="1"></div><button id="ajouterSanctionEquipeBtn">➕ Ajouter sanction</button><hr><h4>Détail des pénalités par équipe</h4><div id="penalitesEquipes"></div><hr><h4>Règlement des pénalités</h4><div class="form-group"><label>Catégorie</label><select id="reglementCategorieSelect"></select></div><div class="form-group"><label>Équipe</label><select id="reglementEquipeSelect"></select></div><div class="form-group"><label>Montant à régler (FCFA)</label><input type="number" id="reglementMontant"></div><button id="reglementBtn" class="btn-secondary">💰 Encaisser règlement</button></div></div>
         <!-- CLASSEMENT -->
-        <div id="classementSection" class="section"><div class="card"><div class="card-header">Classement</div><div class="form-group"><label>Catégorie</label><select id="classementCategorieSelect"></select></div><div id="classementTable"></div></div></div>
+        <div id="classementSection" class="section"><div class="card"><div class="card-header">Classement</div>
+            <div class="form-group"><label>Catégorie</label><select id="classementCategorieSelect"></select></div>
+            <div id="classementTable"></div>
+        </div></div>
         <!-- CALENDRIER -->
         <div id="calendrierSection" class="section"><div class="card"><div class="card-header">Calendrier général de la compétition</div>
             <div class="form-group"><label>Catégorie</label><select id="calendrierCategorieSelect"></select></div>
@@ -338,12 +341,12 @@
     async function loadUsersAndDisplay() {
         if (!hasPermission("admin")) return;
         const users = await storage.getAllUsers();
-        let html = `<table class="table"><thead><tr><th>Nom d'utilisateur</th><th>Rôle</th><th>Action</th></tr></thead><tbody>`;
+        let html = `<table class="table"><thead><tr><th>Nom d'utilisateur</th><th>Rôle</th><th>Action</th></td></thead><tbody>`;
         for (let u of users) {
             if (u.username === "admin") continue;
-            html += `</td><td>${u.username}</td><td>${u.role}</td><td><button class="btn-sm btn-danger" onclick="deleteUserAccount('${u.username}')">Supprimer</button></td></tr>`;
+            html += `<tr><td>${u.username}</td><td>${u.role}</td><td><button class="btn-sm btn-danger" onclick="deleteUserAccount('${u.username}')">Supprimer</button></td></tr>`;
         }
-        html += `</tbody></tr>`;
+        html += `</tbody><tr>`;
         document.getElementById("usersList").innerHTML = html;
     }
     window.deleteUserAccount = async function(username) {
@@ -584,7 +587,7 @@
     };
 
     function populateProgrammationMatches(catId){ if(!canModify() && !canView()) return; if(isSaisonCloturee()) { document.getElementById("progMatchSelect").innerHTML = '<option value="">Saison clôturée</option>'; return; } let select = document.getElementById("progMatchSelect"); if(!select) return; let matchs = getMatchsByCategorie(catId).filter(m => m.programme === false && (m.scoreA_ft === null || m.scoreA_ft === undefined)); select.innerHTML = '<option value="">-- Choisir une rencontre --</option>'; if(matchs.length === 0) { select.innerHTML = '<option value="">⚠️ Aucune rencontre disponible</option>'; return; } for(let m of matchs){ let eqA = db.equipes.find(e=>e.id==m.equipeA)?.nom || "?"; let eqB = db.equipes.find(e=>e.id==m.equipeB)?.nom || "?"; select.innerHTML += `<option value="${m.id}">[Match N°${m.id}] J${m.journee} : ${eqA} vs ${eqB}</option>`; } }
-    function displayProgrammedMatches(catId){ let matchs = getMatchsByCategorie(catId).filter(m=> m.programme===true); let html = `<table class="table"><thead></tr><th>N° Match</th><th>Journée</th><th>Équipes</th><th>Date</th><th>Lieu</th><th>Statut</th><th>Action</th></td></thead><tbody>`; if(matchs.length===0) html += `<tr><td colspan="7">Aucune rencontre programmée.</td></tr>`; for(let m of matchs){ let eqA=db.equipes.find(e=>e.id==m.equipeA)?.nom, eqB=db.equipes.find(e=>e.id==m.equipeB)?.nom; let joue = (m.scoreA_ft!==null) ? (m.homologue ? "Homologué" : "Joué") : "À jouer"; let actionBtn = ""; if(canModify() && m.scoreA_ft===null && !m.homologue){ actionBtn = `<button class="btn-sm btn-danger" onclick="deprogrammerMatch(${m.id})">🗑️ Déprogrammer</button>`; } html += `</td><td>${m.id}</td><td>J${m.journee}</td><td>${eqA} - ${eqB}</td><td>${m.date}</td><td>${m.lieu}</td><td>${joue}</td><td>${actionBtn}</td></tr>`; } html += `</tbody></tr>`; document.getElementById("programmedMatchesList").innerHTML = html; }
+    function displayProgrammedMatches(catId){ let matchs = getMatchsByCategorie(catId).filter(m=> m.programme===true); let html = `<table class="table"><thead><tr><th>N° Match</th><th>Journée</th><th>Équipes</th><th>Date</th><th>Lieu</th><th>Statut</th><th>Action</th></td></thead><tbody>`; if(matchs.length===0) html += `<tr><td colspan="7">Aucune rencontre programmée.</td></tr>`; for(let m of matchs){ let eqA=db.equipes.find(e=>e.id==m.equipeA)?.nom, eqB=db.equipes.find(e=>e.id==m.equipeB)?.nom; let joue = (m.scoreA_ft!==null) ? (m.homologue ? "Homologué" : "Joué") : "À jouer"; let actionBtn = ""; if(canModify() && m.scoreA_ft===null && !m.homologue){ actionBtn = `<button class="btn-sm btn-danger" onclick="deprogrammerMatch(${m.id})">🗑️ Déprogrammer</button>`; } html += `<tr><td>${m.id}</td><td>J${m.journee}</td><td>${eqA} - ${eqB}</td><td>${m.date}</td><td>${m.lieu}</td><td>${joue}</td><td>${actionBtn}</td></tr>`; } html += `</tbody></tr>`; document.getElementById("programmedMatchesList").innerHTML = html; }
     window.deprogrammerMatch = async function(matchId){ if(!canModify()) return; if(bloquerSiCloture()) return; let m = db.matchs.find(m=>m.id==matchId); if(m && m.programme === true && m.scoreA_ft === null){ m.programme = false; m.date = ""; m.lieu = ""; await saveData(); alert("Rencontre déprogrammée."); let catId = m.categorieId; populateProgrammationMatches(catId); displayProgrammedMatches(catId); await renderAll(); } else { alert("Impossible de déprogrammer un match déjà joué ou homologué."); } };
 
     function renderProgrammedMatchesWithScores(catId){ let matchs = getMatchsByCategorie(catId).filter(m=> m.programme===true); let container = document.getElementById("programmedMatchesWithScores"); if(!container) return; if(matchs.length===0){ container.innerHTML="<p>Aucune rencontre programmée.</p>"; return; } let html = `<table class="table"><thead><tr><th>N° Match</th><th>Journée</th><th>Équipe A</th><th>Équipe B</th><th>Date / Lieu</th><th>Mi-temps</th><th>Score final</th><th>Statut</th><th>Action</th></td></thead><tbody>`; for(let m of matchs){ let eqA=db.equipes.find(e=>e.id==m.equipeA)?.nom, eqB=db.equipes.find(e=>e.id==m.equipeB)?.nom; let disabled = (m.homologue || !canModify() || isSaisonCloturee()) ? 'disabled' : ''; let dateLieu = `<input type="date" id="date_${m.id}" value="${m.date||''}" style="width:120px" ${disabled}> <input type="text" id="lieu_${m.id}" value="${m.lieu||''}" placeholder="Lieu" style="width:100px" ${disabled}>`; let mtInputs = `<input type="number" id="mtA_${m.id}" value="${m.scoreA_mt??''}" style="width:60px" ${disabled}> - <input type="number" id="mtB_${m.id}" value="${m.scoreB_mt??''}" style="width:60px" ${disabled}>`; let ftInputs = `<input type="number" id="ftA_${m.id}" value="${m.scoreA_ft??''}" style="width:60px" ${disabled}> - <input type="number" id="ftB_${m.id}" value="${m.scoreB_ft??''}" style="width:60px" ${disabled}>`; let statut = m.homologue ? "✅ Homologué" : (m.scoreA_ft!==null ? "⏳ Résultat saisi" : "À jouer"); let action = ""; if(canModify() && !isSaisonCloturee()){ if(!m.homologue){ action = `<button class="btn-sm" onclick="saveResultMatch(${m.id})">💾 Enreg. résultat</button>`; if(m.scoreA_ft!==null && m.scoreB_ft!==null){ action += ` <button class="btn-sm btn-secondary" onclick="validerHomologation(${m.id})">✅ Homologuer</button>`; } } else { action = `<button class="btn-sm btn-danger" onclick="annulerHomologation(${m.id})">↩️ Annuler homologation</button>`; } } else { action = "Consultation seule"; } html += `<tr><td>${m.id}</td><td>J${m.journee}</td><td>${eqA}</td><td>${eqB}</td><td>${dateLieu}</td><td>${mtInputs}</td><td>${ftInputs}</td><td>${statut}</td><td>${action}</td></tr>`; } html += `</tbody></td>`; container.innerHTML = html; }
@@ -661,15 +664,15 @@
             if(matchs.length===0) return "<p>Aucune rencontre générée pour cette catégorie.</p>";
             let html = `<h3>Catégorie : ${db.categories.find(c=>c.id==catId)?.nom}</h3>
             <table class="calendrier-table">
-                <thead></tr><th>N° Match</th><th>Journée</th><th>Date</th><th>Lieu</th><th>Équipe A</th><th>Score</th><th>Équipe B</th><th>Statut</th></tr></thead>
+                <thead><tr><th>N° Match</th><th>Journée</th><th>Date</th><th>Lieu</th><th>Équipe A</th><th>Score</th><th>Équipe B</th><th>Statut</th></td></thead>
                 <tbody>`;
             for(let m of matchs.sort((a,b)=>a.journee-b.journee)){
                 let eqA=db.equipes.find(e=>e.id==m.equipeA)?.nom, eqB=db.equipes.find(e=>e.id==m.equipeB)?.nom;
                 let score = (m.scoreA_ft!==null) ? `${m.scoreA_ft} - ${m.scoreB_ft}` : "-";
                 let statut = m.homologue ? "Homologué" : (m.scoreA_ft!==null ? "Joué" : (m.programme ? "Programmé" : "Non programmé"));
-                html += `<tr><td>${m.id}</td><td>J${m.journee}</td><td>${m.date || "-"}</td><td>${m.lieu || "-"}</td><td>${eqA}</td><td>${score}</td><td>${eqB}</td><td>${statut}</td></td>`;
+                html += `<tr><td>${m.id}</td><td>J${m.journee}</td><td>${m.date || "-"}</td><td>${m.lieu || "-"}</td><td>${eqA}</td><td>${score}</td><td>${eqB}</td><td>${statut}</td></tr>`;
             }
-            html += `</tbody></table>`;
+            html += `</tbody><tr>`;
             return html;
         } else {
             let catsFilter = db.categories.filter(c=>{ let comp = db.competitions.find(cp=>cp.id==c.competitionId); return comp && comp.saisonId==currentSaisonId; });
@@ -687,9 +690,9 @@
                     let eqA=db.equipes.find(e=>e.id==m.equipeA)?.nom, eqB=db.equipes.find(e=>e.id==m.equipeB)?.nom;
                     let score = (m.scoreA_ft!==null) ? `${m.scoreA_ft} - ${m.scoreB_ft}` : "-";
                     let statut = m.homologue ? "Homologué" : (m.scoreA_ft!==null ? "Joué" : (m.programme ? "Programmé" : "Non programmé"));
-                    html += `</td><td>${m.id}</td><td>J${m.journee}</td><td>${m.date || "-"}</td><td>${m.lieu || "-"}</td><td>${eqA}</td><td>${score}</td><td>${eqB}</td><td>${statut}</td></tr>`;
+                    html += `<tr><td>${m.id}</td><td>J${m.journee}</td><td>${m.date || "-"}</td><td>${m.lieu || "-"}</td><td>${eqA}</td><td>${score}</td><td>${eqB}</td><td>${statut}</td></tr>`;
                 }
-                html += `</tbody><table></div>`;
+                html += `</tbody></table></div>`;
             }
             if(html === "") return "<p>Aucune rencontre générée pour cette saison.</p>";
             return html;
@@ -922,7 +925,7 @@
                     <td>${eqB}</td>
                 </tr>`;
             }
-            html += `</tbody></table>`;
+            html += `</tbody><table>`;
         }
 
         html += `<h3>2. Pénalités et amendes par équipe</h3>`;
@@ -1019,7 +1022,6 @@
             alert("Aucune catégorie trouvée.");
             return;
         }
-        // Extraire uniquement le conteneur principal pour le PDF
         const parser = new DOMParser();
         const doc = parser.parseFromString(fullHtml, 'text/html');
         const container = doc.querySelector('.container');
@@ -1051,15 +1053,43 @@
         });
     }
 
+    // ==================== CLASSEMENT (CORRIGÉ) ====================
+    function afficherClassement() {
+        let catId = document.getElementById("classementCategorieSelect")?.value;
+        if (!catId) {
+            document.getElementById("classementTable").innerHTML = "<p>Sélectionnez une catégorie.</p>";
+            return;
+        }
+        let classement = calculerClassement(parseInt(catId));
+        let html = `<table class="table"><thead>
+            <tr><th>#</th><th>Équipe</th><th>MJ</th><th>G</th><th>N</th><th>P</th><th>BP</th><th>BC</th><th>Diff</th><th>Pts</th></tr>
+            </thead><tbody>`;
+        classement.forEach((c, idx) => {
+            html += `<tr>
+                <td>${idx + 1}</td>
+                <td>${c.nom}</td>
+                <td>${c.mj}</td>
+                <td>${c.g}</td>
+                <td>${c.n}</td>
+                <td>${c.p}</td>
+                <td>${c.bp}</td>
+                <td>${c.bc}</td>
+                <td>${c.diff}</td>
+                <td>${c.pts}</td>
+            </tr>`;
+        });
+        html += `</tbody></table>`;
+        document.getElementById("classementTable").innerHTML = html;
+    }
+
     // ==================== RENDU GLOBAL ====================
     function renderSaisons(){ let html = `<ul>`; db.saisons.forEach(s => { html += `<li>${s.nom} ${currentSaisonId==s.id?"✔️ ACTIVE":""} ${s.cloturee?"🔒 Clôturée":""} <button class="btn-sm" onclick="window.setSaisonActive(${s.id})">Activer</button> ${canModify() ? `<button class="btn-sm btn-danger" onclick="window.deleteSaison(${s.id})">Supprimer</button>` : ""}</li>`; }); html += `</ul>`; document.getElementById("saisonList").innerHTML = html; let select = document.getElementById("activeSaisonSelect"); if(select) select.innerHTML = db.saisons.map(s=>`<option value="${s.id}" ${currentSaisonId==s.id?"selected":""}>${s.nom} ${s.cloturee?"(Clôturée)":""}</option>`).join(""); let compSaison = document.getElementById("compSaisonSelect"); if(compSaison) compSaison.innerHTML = db.saisons.map(s=>`<option value="${s.id}" ${currentSaisonId==s.id?"selected":""}>${s.nom}</option>`).join(""); }
-    function renderCompetitions(){ if(!canView()) return; let comps = db.competitions.filter(c=>c.saisonId==currentSaisonId); let html = `<table class="table"><thead></td><th>Nom</th><th>Actions</th></td></thead><tbody>`; comps.forEach(c=>{html+=`<tr><td>${c.nom}</td><td>${canModify() ? `<button class="btn-sm btn-danger" onclick="deleteCompetition(${c.id})">Supprimer</button>` : ""}</td>`}); html+=`</tbody><table>`; document.getElementById("compList").innerHTML = html; let catSelect = document.getElementById("catCompetitionSelect"); if(catSelect) catSelect.innerHTML = comps.map(c=>`<option value="${c.id}">${c.nom}</option>`).join(""); }
-    function renderCategories(){ if(!canView()) return; let cats = db.categories.filter(c=>{ let comp = db.competitions.find(cp=>cp.id==c.competitionId); return comp && comp.saisonId==currentSaisonId;}); let html = `<table class="table"><thead><tr><th>Nom</th><th>Compétition</th><th>Action</th></td></thead><tbody>`; cats.forEach(c=>{ let compNom = db.competitions.find(cp=>cp.id==c.competitionId)?.nom; html+=`</tr><td>${c.nom}</td><td>${compNom}</td><td>${canModify() ? `<button class="btn-sm btn-danger" onclick="deleteCategorie(${c.id})">Supprimer</button>` : ""}</td>`}); html+=`</tbody></table>`; document.getElementById("categorieList").innerHTML = html; let equipeCatSelect = document.getElementById("equipeCategorieSelect"); if(equipeCatSelect) equipeCatSelect.innerHTML = cats.map(c=>`<option value="${c.id}">${c.nom}</option>`).join(""); let saved = getSavedSelector("equipeCategorieSelect"); if(saved && cats.some(c=>c.id==saved)) equipeCatSelect.value = saved; }
-    function renderEquipes(){ if(!canView()) return; let catId = document.getElementById("equipeCategorieSelect")?.value; if(catId){ let equipes = getEquipesByCategorie(parseInt(catId)); let html = `<table class="table"><thead></td><th>Nom</th><th>Action</th></td></thead><tbody>`; equipes.forEach(e=>{html+=`<tr><td>${e.nom}</td><td>${canModify() ? `<button class="btn-sm btn-danger" onclick="deleteEquipe(${e.id})">Supprimer</button>` : ""}</td>`}); html+=`</tbody></td>`; document.getElementById("equipeList").innerHTML = html; } else { document.getElementById("equipeList").innerHTML = "<p>Sélectionnez une catégorie</p>"; } }
+    function renderCompetitions(){ if(!canView()) return; let comps = db.competitions.filter(c=>c.saisonId==currentSaisonId); let html = `<table class="table"><thead><tr><th>Nom</th><th>Actions</th></td></thead><tbody>`; comps.forEach(c=>{html+=`<tr><td>${c.nom}</td><td>${canModify() ? `<button class="btn-sm btn-danger" onclick="deleteCompetition(${c.id})">Supprimer</button>` : ""}</td>`}); html+=`</tbody><tr>`; document.getElementById("compList").innerHTML = html; let catSelect = document.getElementById("catCompetitionSelect"); if(catSelect) catSelect.innerHTML = comps.map(c=>`<option value="${c.id}">${c.nom}</option>`).join(""); }
+    function renderCategories(){ if(!canView()) return; let cats = db.categories.filter(c=>{ let comp = db.competitions.find(cp=>cp.id==c.competitionId); return comp && comp.saisonId==currentSaisonId;}); let html = `<table class="table"><thead><tr><th>Nom</th><th>Compétition</th><th>Action</th></td></thead><tbody>`; cats.forEach(c=>{ let compNom = db.competitions.find(cp=>cp.id==c.competitionId)?.nom; html+=`</td><td>${c.nom}</td><td>${compNom}</td><td>${canModify() ? `<button class="btn-sm btn-danger" onclick="deleteCategorie(${c.id})">Supprimer</button>` : ""}</td>`}); html+=`</tbody></td>`; document.getElementById("categorieList").innerHTML = html; let equipeCatSelect = document.getElementById("equipeCategorieSelect"); if(equipeCatSelect) equipeCatSelect.innerHTML = cats.map(c=>`<option value="${c.id}">${c.nom}</option>`).join(""); let saved = getSavedSelector("equipeCategorieSelect"); if(saved && cats.some(c=>c.id==saved)) equipeCatSelect.value = saved; }
+    function renderEquipes(){ if(!canView()) return; let catId = document.getElementById("equipeCategorieSelect")?.value; if(catId){ let equipes = getEquipesByCategorie(parseInt(catId)); let html = `<table class="table"><thead></tr><th>Nom</th><th>Action</th></td></thead><tbody>`; equipes.forEach(e=>{html+=`</td><td>${e.nom}</td><td>${canModify() ? `<button class="btn-sm btn-danger" onclick="deleteEquipe(${e.id})">Supprimer</button>` : ""}</td>`}); html+=`</tbody><tr>`; document.getElementById("equipeList").innerHTML = html; } else { document.getElementById("equipeList").innerHTML = "<p>Sélectionnez une catégorie</p>"; } }
     function renderFormuleCats(){ let catsFilter = db.categories.filter(c=>{ let comp = db.competitions.find(cp=>cp.id==c.competitionId); return comp && comp.saisonId==currentSaisonId;}); let select = document.getElementById("formuleCategorieSelect"); if(select) { select.innerHTML = catsFilter.map(c=>`<option value="${c.id}">${c.nom}</option>`).join(""); let saved = getSavedSelector("formuleCategorieSelect"); if(saved && catsFilter.some(c=>c.id==saved)) select.value = saved; } }
     function refreshPoulesUI(){ let catIdElem = document.getElementById("formuleCategorieSelect"); if(!catIdElem) return; let catId = parseInt(catIdElem.value); if(!catId) return; let poulesCat = db.poules.filter(p=>p.categorieId==catId); let equipesDispo = getEquipesByCategorie(catId); let container = document.getElementById("poulesContainer"); if(!container) return; let htmlPoules = ``; for(let p of poulesCat){ htmlPoules += `<div style="border:1px solid #ccc; margin:10px 0; padding:10px;"><b>Poule: ${p.nomPoule}</b> ${canModify() ? `<button class="btn-sm btn-danger" onclick="window.deletePoule(${p.id})">Supprimer poule</button>` : ""}<br>`; htmlPoules += `<select id="affectEquipe_${p.id}" style="width:auto;display:inline-block; margin-right:5px;" ${!canModify() ? 'disabled' : ''}> <option value="">--Ajouter équipe--</option> ${equipesDispo.filter(e=>!p.equipesIds.includes(e.id)).map(e=>`<option value="${e.id}">${e.nom}</option>`).join("")} </select>${canModify() ? `<button class="btn-sm" onclick="window.ajouterEquipePoule(${p.id})">+ Ajouter</button>` : ""}<br><strong>Équipes :</strong> `; let equipeNames = p.equipesIds.map(eid=>db.equipes.find(e=>e.id==eid)?.nom).join(", "); htmlPoules += equipeNames || "Aucune"; htmlPoules += `</div>`; } container.innerHTML = htmlPoules || "<p>Aucune poule.</p>"; }
-    function displayGeneratedMatches(catId){ let matchs = getMatchsByCategorie(catId); let container = document.getElementById("matchsPreview"); if(!container) return; if(matchs.length===0){ container.innerHTML="<p>Aucune rencontre générée.</p>"; return; } let html = `<table class="table"><thead><tr><th>N° Match</th><th>Catégorie</th><th>Journée</th><th>Équipe A</th><th>Équipe B</th><th>Date</th><th>Lieu</th><th>Programmé</th><th>Score</th></td></thead><tbody>`; let categorie = db.categories.find(c=>c.id==catId)?.nom || "?"; for(let m of matchs){ let eqA=db.equipes.find(e=>e.id==m.equipeA)?.nom, eqB=db.equipes.find(e=>e.id==m.equipeB)?.nom; let prog = m.programme ? "✅ Oui" : "Non"; let score = (m.scoreA_ft!==null) ? `${m.scoreA_ft} - ${m.scoreB_ft}` : "-"; html += `<table><td>${m.id}</td><td>${categorie}</td><td>J${m.journee}</td><td>${eqA}</td><td>${eqB}</td><td>${m.date || "-"}</td><td>${m.lieu || "-"}</td><td>${prog}</td><td>${score}</td></tr>`; } html += `</tbody></table>`; container.innerHTML = html; }
-    function afficherClassement(){ let catId = document.getElementById("classementCategorieSelect")?.value; if(!catId) return; let classement = calculerClassement(parseInt(catId)); let html = `<table class="table"><thead><tr><th>#</th><th>Équipe</th><th>MJ</th><th>G</th><th>N</th><th>P</th><th>BP</th><th>BC</th><th>Diff</th><th>Pts</th></table></thead><tbody>`; classement.forEach((c,idx)=>{html+=`<tr><td>${idx+1}</td><td>${c.nom}</td><td>${c.mj}</td><td>${c.g}</td><td>${c.n}</td><td>${c.p}</td><td>${c.bp}</td><td>${c.bc}</td><td>${c.diff}</td><td>${c.pts}</td></tr>`}); html+=`</tbody></table>`; document.getElementById("classementTable").innerHTML = html; }
+    function displayGeneratedMatches(catId){ let matchs = getMatchsByCategorie(catId); let container = document.getElementById("matchsPreview"); if(!container) return; if(matchs.length===0){ container.innerHTML="<p>Aucune rencontre générée.</p>"; return; } let html = `<table class="table"><thead></tr><th>N° Match</th><th>Catégorie</th><th>Journée</th><th>Équipe A</th><th>Équipe B</th><th>Date</th><th>Lieu</th><th>Programmé</th><th>Score</th></td></thead><tbody>`; let categorie = db.categories.find(c=>c.id==catId)?.nom || "?"; for(let m of matchs){ let eqA=db.equipes.find(e=>e.id==m.equipeA)?.nom, eqB=db.equipes.find(e=>e.id==m.equipeB)?.nom; let prog = m.programme ? "✅ Oui" : "Non"; let score = (m.scoreA_ft!==null) ? `${m.scoreA_ft} - ${m.scoreB_ft}` : "-"; html += `</td><td>${m.id}</td><td>${categorie}</td><td>J${m.journee}</td><td>${eqA}</td><td>${eqB}</td><td>${m.date || "-"}</td><td>${m.lieu || "-"}</td><td>${prog}</td><td>${score}</td></td>`; } html += `</tbody></td>`; container.innerHTML = html; }
 
     async function renderAll(){ 
         renderSaisons(); 
@@ -1106,7 +1136,7 @@
     function renderSanctionsConfig(){ let html = `<div><h5>Types de sanctions existants :</h5>`; db.sanctionsTypes.forEach(s => { html += `<div class="sanction-item"><input type="text" id="lib_${s.id}" value="${s.libelle}" style="width:150px" ${!canModify() ? 'disabled' : ''}><input type="number" id="mt_${s.id}" value="${s.montant}" style="width:100px" ${!canModify() ? 'disabled' : ''}>${canModify() ? `<button class="btn-sm" onclick="updateSanctionType(${s.id})">💾 Modifier</button><button class="btn-sm btn-danger" onclick="deleteSanctionType(${s.id})">Supprimer</button>` : ""}</div>`; }); html += `</div>`; document.getElementById("sanctionsConfigList").innerHTML = html; let select = document.getElementById("sanctionTypeSelect"); if(select) select.innerHTML = db.sanctionsTypes.map(s=>`<option value="${s.id}">${s.libelle} (${s.montant} FCFA)</option>`).join(""); }
     window.updateSanctionType = async function(id){ if(!canModify()) return; let newLib = document.getElementById(`lib_${id}`).value; let newMontant = parseInt(document.getElementById(`mt_${id}`).value); let s = db.sanctionsTypes.find(s=>s.id==id); if(s && newLib && !isNaN(newMontant)){ s.libelle = newLib; s.montant = newMontant; await saveData(); renderSanctionsConfig(); renderPenalitesEquipes(); } else alert("Champs invalides"); };
     window.deleteSanctionType = async function(id){ if(!canModify()) return; if(confirm("Supprimer ce type de sanction ?")){ db.sanctionsTypes = db.sanctionsTypes.filter(s=>s.id!=id); db.penalites = db.penalites.filter(p=>p.sanctionTypeId!=id); await saveData(); renderSanctionsConfig(); renderPenalitesEquipes(); } };
-    function renderPenalitesEquipes(){ let catId = document.getElementById("sanctionCategorieSelect")?.value; if(!catId) return; let equipes = getEquipesByCategorie(parseInt(catId)); let html = `<table class="table"><thead></td><th>Équipe</th><th>Détail sanctions</th><th>Total dû (FCFA)</th><th>Réglé (FCFA)</th><th>Reste à payer</th></tr></thead><tbody>`; for(let eq of equipes){ let penalitesEq = db.penalites.filter(p=>p.equipeId==eq.id); let totalDu = penalitesEq.reduce((sum,p)=> sum + (p.montantTotal - (p.montantRegle||0)),0); let totalRegle = penalitesEq.reduce((sum,p)=> sum + (p.montantRegle||0),0); let reste = totalDu - totalRegle; let details = penalitesEq.map(p=>{ let s=db.sanctionsTypes.find(st=>st.id==p.sanctionTypeId); return `${s?.libelle} x${p.quantite} = ${p.montantTotal} FCFA`; }).join("<br>"); html += `<tr><td>${eq.nom}</td><td>${details || "Aucune"}</td><td>${totalDu}</td><td>${totalRegle}</td><td>${reste}</td>`; } html += `</tbody><table>`; document.getElementById("penalitesEquipes").innerHTML = html; let reglemCat = document.getElementById("reglementCategorieSelect"); if(reglemCat && reglemCat.value == catId){ let equipeSelect = document.getElementById("reglementEquipeSelect"); equipeSelect.innerHTML = equipes.map(e=>`<option value="${e.id}">${e.nom}</option>`).join(""); } }
+    function renderPenalitesEquipes(){ let catId = document.getElementById("sanctionCategorieSelect")?.value; if(!catId) return; let equipes = getEquipesByCategorie(parseInt(catId)); let html = `<table class="table"><thead></td><th>Équipe</th><th>Détail sanctions</th><th>Total dû (FCFA)</th><th>Réglé (FCFA)</th><th>Reste à payer</th></td></thead><tbody>`; for(let eq of equipes){ let penalitesEq = db.penalites.filter(p=>p.equipeId==eq.id); let totalDu = penalitesEq.reduce((sum,p)=> sum + (p.montantTotal - (p.montantRegle||0)),0); let totalRegle = penalitesEq.reduce((sum,p)=> sum + (p.montantRegle||0),0); let reste = totalDu - totalRegle; let details = penalitesEq.map(p=>{ let s=db.sanctionsTypes.find(st=>st.id==p.sanctionTypeId); return `${s?.libelle} x${p.quantite} = ${p.montantTotal} FCFA`; }).join("<br>"); html += `<tr><td>${eq.nom}</td><td>${details || "Aucune"}</td><td>${totalDu}</td><td>${totalRegle}</td><td>${reste}</td>`; } html += `</tbody><tr>`; document.getElementById("penalitesEquipes").innerHTML = html; let reglemCat = document.getElementById("reglementCategorieSelect"); if(reglemCat && reglemCat.value == catId){ let equipeSelect = document.getElementById("reglementEquipeSelect"); equipeSelect.innerHTML = equipes.map(e=>`<option value="${e.id}">${e.nom}</option>`).join(""); } }
     function ajouterSanctionEquipe(equipeId, sanctionTypeId, quantite){ if(!canModify()) return; let sanction = db.sanctionsTypes.find(s=>s.id==sanctionTypeId); if(!sanction) return; let montantTotal = sanction.montant * quantite; db.penalites.push({ id: Date.now()+Math.random(), equipeId, sanctionTypeId, quantite, montantTotal, montantRegle: 0 }); saveData(); renderPenalitesEquipes(); }
     function reglementPenalite(equipeId, montant){ if(!canModify()) return; let penalites = db.penalites.filter(p=>p.equipeId==equipeId && (p.montantTotal - (p.montantRegle||0)) >0); if(penalites.length===0) return false; let resteGlobal = penalites.reduce((sum,p)=> sum + (p.montantTotal - (p.montantRegle||0)),0); if(montant > resteGlobal) montant = resteGlobal; let aRepartir = montant; for(let p of penalites){ let reste = p.montantTotal - (p.montantRegle||0); if(aRepartir <=0) break; let deduction = Math.min(reste, aRepartir); p.montantRegle = (p.montantRegle||0) + deduction; aRepartir -= deduction; } saveData(); return true; }
 
@@ -1159,9 +1189,44 @@
         document.getElementById("importDataBtn")?.addEventListener("click", () => document.getElementById("importDataFile").click());
         document.getElementById("importDataFile")?.addEventListener("change", (e) => { if(e.target.files.length) importAllData(e.target.files[0]); e.target.value = ""; });
         document.getElementById("createUserBtn")?.addEventListener("click", () => createUser());
+        // Écouteur pour le classement
+        document.getElementById("classementCategorieSelect")?.addEventListener("change", () => afficherClassement());
     }
 
-    function initTabs(){ const tabs=document.querySelectorAll('#mainTabs .tab-btn'); const sections=document.querySelectorAll('#mainApp .section'); tabs.forEach(btn=>{ btn.addEventListener('click',()=>{ let tabId=btn.getAttribute('data-tab'); tabs.forEach(b=>b.classList.remove('active')); sections.forEach(s=>s.classList.remove('active-section')); btn.classList.add('active'); document.getElementById(`${tabId}Section`).classList.add('active-section'); if(tabId=='formule'){ let c=document.getElementById("formuleCategorieSelect")?.value; if(c) displayGeneratedMatches(parseInt(c)); } if(tabId=='programmation'){ let c=document.getElementById("progCategorieSelect")?.value; if(c){ populateProgrammationMatches(parseInt(c)); displayProgrammedMatches(parseInt(c)); } } if(tabId=='resultat'){ let c=document.getElementById("resultCategorieSelect")?.value; if(c) renderProgrammedMatchesWithScores(parseInt(c)); } if(tabId=='sanctions') renderPenalitesEquipes(); if(tabId=='classement') afficherClassement(); if(tabId=='calendrier'){ let c=document.getElementById("calendrierCategorieSelect")?.value; if(c) showCalendrier(); } }); }); }
+    function initTabs(){
+        const tabs = document.querySelectorAll('#mainTabs .tab-btn');
+        const sections = document.querySelectorAll('#mainApp .section');
+        tabs.forEach(btn => {
+            btn.addEventListener('click', () => {
+                let tabId = btn.getAttribute('data-tab');
+                tabs.forEach(b => b.classList.remove('active'));
+                sections.forEach(s => s.classList.remove('active-section'));
+                btn.classList.add('active');
+                document.getElementById(`${tabId}Section`).classList.add('active-section');
+                if (tabId == 'formule') {
+                    let c = document.getElementById("formuleCategorieSelect")?.value;
+                    if (c) displayGeneratedMatches(parseInt(c));
+                }
+                if (tabId == 'programmation') {
+                    let c = document.getElementById("progCategorieSelect")?.value;
+                    if (c) {
+                        populateProgrammationMatches(parseInt(c));
+                        displayProgrammedMatches(parseInt(c));
+                    }
+                }
+                if (tabId == 'resultat') {
+                    let c = document.getElementById("resultCategorieSelect")?.value;
+                    if (c) renderProgrammedMatchesWithScores(parseInt(c));
+                }
+                if (tabId == 'sanctions') renderPenalitesEquipes();
+                if (tabId == 'classement') afficherClassement();
+                if (tabId == 'calendrier') {
+                    let c = document.getElementById("calendrierCategorieSelect")?.value;
+                    if (c) showCalendrier();
+                }
+            });
+        });
+    }
 
     async function init(){ 
         await storage.open();
